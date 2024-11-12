@@ -4,9 +4,11 @@
     "author": "Tim Shichalin",
     "type": "module",
     "scripts": {
+        "front:dev": "vite",
         "front:start": "node frontend/server.js"
     },
     "dependencies": {
-        "express": "^4.21.1"
+        "express": "^4.21.1",
+        "vite": "^5.4.11"
     }
 }
