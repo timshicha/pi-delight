@@ -1,0 +1,12 @@
+{
+    "name": "pi-delight",
+    "version": "1.0.0",
+    "author": "Tim Shichalin",
+    "type": "module",
+    "scripts": {
+        "front:start": "node frontend/server.js"
+    },
+    "dependencies": {
+        "express": "^4.21.1"
+    }
+}
