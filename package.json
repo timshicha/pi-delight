@@ -8,6 +8,7 @@
         "front:start": "node frontend/server.js"
     },
     "dependencies": {
+        "dotenv": "^16.4.5",
         "express": "^4.21.1",
         "vite": "^5.4.11"
     }
