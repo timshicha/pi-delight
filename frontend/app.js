@@ -2,6 +2,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 
+const HOST = process.env.VITE_DEV_CLIENT_HOST
 const PORT = process.env.VITE_DEV_CLIENT_PORT || 3000;
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -16,5 +17,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://${HOST}:${PORT}`);
 });
