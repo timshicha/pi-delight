@@ -1,10 +1,37 @@
+import PiDelightSocket from "./PiDelightSocket";
+
 const HOST = '192.168.0.23';
 const PORT = 80;
 
-var socket = new WebSocket(
-    `ws://${HOST}:${PORT}`
-);
+var ws = new PiDelightSocket(HOST, PORT);
 
-const buttonPressed = () => {
-    console.log("Button pressed");
-};
+// This is what needs to be done when there's a message from the server
+const wsOnMessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    // If create account response
+    if(data.messageType === 'createAccount') {
+        if(data.status == 200) {
+            // Store the token in local storage (not safe, don't try at home).
+            localStorage.setItem('token', data.token);
+            console.log("Logged in. Token stored.");
+        }
+        else {
+            console.log("Could not log in.");
+        }
+    }
+}
+
+document.getElementById("connectBtn").addEventListener('click', () => {
+    ws.connect();
+    ws.ws.onmessage = (event) => wsOnMessage(event);
+});
+
+document.getElementById("disconnectBtn").addEventListener('click', () => {
+    ws.disconnect();
+});
+document.getElementById("createAccountBtn").addEventListener('click', () => {
+    let username = document.getElementById("createAccountUsernameInput").value;
+    let password = document.getElementById("createAccountPasswordInput").value;
+    ws.send(JSON.stringify({messageType: "createAccount", username: username, password: password}));
+});

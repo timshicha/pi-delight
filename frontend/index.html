@@ -2,10 +2,16 @@
 <html lang="en">
     <head>
         <title>Pi Delight Home</title>
-        <script src="js/script.js"></script>
+        <script type="module" src="js/script.js"></script>
     </head>
     <body>
         <p>Hello world!</p>
-        <button onclick="buttonPressed()">Connect to test</button>
+        <button id="connectBtn">Connect</button>
+        <br>
+        <button id="disconnectBtn">Disconnect</button>
+        <br>
+        Username: <input type="text" id="createAccountUsernameInput">
+        Password: <input type="password" id="createAccountPasswordInput">
+        <button id="createAccountBtn">Create Account</button>
     </body>
 </html>
