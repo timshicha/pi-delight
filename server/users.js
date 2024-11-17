@@ -1,11 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 
+
+
 export class User {
 
     constructor () {
         this.username = null;
         this.password = null;
-        this.data = null;
+        this.data = {
+            friends: [],
+            incomingFriendRequests: [],
+            outgoingFriendRequests: []
+        };
         this.currentTokenID = null;
         // Keep track of whether the user was changed to know if data
         // in the file needs to be updated.
@@ -16,7 +22,16 @@ export class User {
     setUser = (username, password, data, currentTokenID) => {
         this.username = username;
         this.password = password;
-        this.data = data;
+        if(data) {
+            this.data = data;
+        }
+        else {
+            this.data = {
+                friends: [],
+                incomingFriendRequests: [],
+                outgoingFriendRequests: []
+            };
+        }
         this.currentTokenID = currentTokenID;
         this.updated = true;
         return true;
@@ -46,6 +61,75 @@ export class User {
             currentTokenID: this.currentTokenID
         });
     }
+
+    // Get the list of friends
+    getFriends = () => {
+        return this.data.friends;
+    }
+
+    // Get the list of incoming friend requests
+    getIncomingFriendRequests = () => {
+        return this.data.incomingFriendRequests;
+    }
+
+    // Get the list of outgoing friend requests
+    getOutgoingFriendRequests = () => {
+        return this.data.outgoingFriendRequests;
+    }
+
+    // See if another user is a friend
+    isFriend = (friendUsername) => {
+        if (friendUsername in this.data.friends) {
+            return true;
+        };
+        return false;
+    }
+
+    // See if there is an incoming friend request from a user
+    hasIncomingFriendRequest = (friendUsername) => {
+        if(friendUsername in this.data.incomingFriendRequests) {
+            return true;      
+        }
+        return false;
+    }
+
+    // Add a friend request coming from someone else
+    addIncomingFriendRequest = (friendUsername) => {
+        // Make sure they're not already friends
+        if(this.isFriend(friendUsername)) {
+            return false;
+        }
+        // Make sure they don't already have an incoming request
+        // from this person.
+        if(this.hasIncomingFriendRequest(friendUsername)) {
+            return false;
+        }
+        this.data.incomingFriendRequests.push(friendUsername);
+        return true;
+    }
+
+    // See if there is an outgoing friend request from a user
+    hasOutgoingFriendRequest = (friendUsername) => {
+        if(friendUsername in this.data.outgoingFriendRequests) {
+            return true;
+        }
+        return false;
+    }
+
+    // Add a friend request going to someone else
+    addOutgoingFriendRequest = (friendUsername) => {
+        // Make sure they're not already friends
+        if(this.isFriend(friendUsername)) {
+            return false;
+        }
+        // Make sure they don't already have an outgoing request
+        // to this person.
+        if(this.hasOutgoingFriendRequest(friendUsername)) {
+            return false;
+        }
+        this.data.outgoingFriendRequests.push(friendUsername);
+        return true;
+    }
 }
 
 export class Users {
@@ -54,7 +138,7 @@ export class Users {
     }
 
     // Add user by providing user details
-    addUser = (username, password, data = {}, currentTokenID = null) => {
+    addUser = (username, password, data, currentTokenID) => {
         // If user already exists with this username, don't allow
         if(username in this.users) {
             return false;
