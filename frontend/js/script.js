@@ -14,7 +14,18 @@ const wsOnMessage = (event) => {
         if(data.status == 200) {
             // Store the token in local storage (not safe, don't try at home).
             localStorage.setItem('token', data.token);
-            console.log("Logged in. Token stored.");
+            console.log("Logged in. Token: " + data.token);
+        }
+        else {
+            console.log("Could not log in.");
+        }
+    }
+    // If login response
+    else if(data.messageType === 'login') {
+        if(data.status == 200) {
+            // Store the token in local storage (not safe)
+            localStorage.setItem('token', data.token);
+            console.log("Loggen in. Token: " + data.token);
         }
         else {
             console.log("Could not log in.");
@@ -34,4 +45,9 @@ document.getElementById("createAccountBtn").addEventListener('click', () => {
     let username = document.getElementById("createAccountUsernameInput").value;
     let password = document.getElementById("createAccountPasswordInput").value;
     ws.send(JSON.stringify({messageType: "createAccount", username: username, password: password}));
+});
+document.getElementById("loginBtn").addEventListener('click', () => {
+    let username = document.getElementById("loginUsernameInput").value;
+    let password = document.getElementById("loginPasswordInput").value;
+    ws.send(JSON.stringify({messageType: "login", username: username, password: password}));
 });

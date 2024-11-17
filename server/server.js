@@ -46,6 +46,29 @@ wss.on('connection', (ws, req) => {
                 ws.send(ret);
             }
         }
+
+        // Log in
+        if(res.messageType === "login") {
+            let token = users.validateUser(res.username, res.password);
+            if(token) {
+                let ret = JSON.stringify({
+                    messageType: 'login',
+                    status: 200,
+                    username: res.username,
+                    token: token
+                });
+                ws.send(ret);
+            }
+            else {
+                let ret = JSON.stringify({
+                    messageType: 'login',
+                    status: 401,
+                    username: "",
+                    token: ""
+                });
+                ws.send(ret);
+            }
+        }
     });
 
     ws.on('close', (ws) => {
