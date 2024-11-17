@@ -1,8 +1,10 @@
 import { fileURLToPath } from 'url';
 import { WebSocketServer } from 'ws';
-import { Users } from './users.js';
 import path, { dirname } from 'path';
 import dotenv from 'dotenv';
+
+import { Users } from './users.js';
+import { Save_Load } from './save_load.js';
 
 dotenv.config();
 const HOST = process.env.VITE_DEV_SERVER_HOST
@@ -15,7 +17,7 @@ const wss = new WebSocketServer({
 });
 console.log(`Server running on http://${HOST}:${PORT}`);
 const users = new Users();
-setInterval(() => { console.log(users)}, 3000);
+setInterval(() => { Save_Load.save_users(users)}, 1000);
 
 wss.on('connection', (ws, req) => {
     console.log(`${req.socket.remoteAddress} connected`);

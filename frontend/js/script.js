@@ -13,6 +13,7 @@ const wsOnMessage = (event) => {
     if(data.messageType === 'createAccount') {
         if(data.status == 200) {
             // Store the token in local storage (not safe, don't try at home).
+            localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
             console.log("Logged in. Token: " + data.token);
         }
@@ -24,6 +25,7 @@ const wsOnMessage = (event) => {
     else if(data.messageType === 'login') {
         if(data.status == 200) {
             // Store the token in local storage (not safe)
+            localStorage.setItem('username', data.username);
             localStorage.setItem('token', data.token);
             console.log("Loggen in. Token: " + data.token);
         }

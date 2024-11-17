@@ -7,6 +7,9 @@ export class User {
         this.password = null;
         this.data = null;
         this.currentTokenID = null;
+        // Keep track of whether the user was changed to know if data
+        // in the file needs to be updated.
+        this.updated = false;
     }
 
     // Create user by providing user details
@@ -15,10 +18,11 @@ export class User {
         this.password = password;
         this.data = data;
         this.currentTokenID = currentTokenID;
+        this.updated = true;
         return true;
     }
 
-    // Create user from a json string with user details
+    // Create user from data file
     setUserFromJSON = (userJSON) => {
         // Try parsing the user
         try {
@@ -32,6 +36,15 @@ export class User {
             return false;
         }
         return true;
+    }
+
+    toJSON = () => {
+        return JSON.stringify({
+            username: this.username,
+            password: this.password,
+            data: this.data,
+            currentTokenID: this.currentTokenID
+        });
     }
 }
 
@@ -52,7 +65,7 @@ export class Users {
         return user;
     }
 
-    // Add user by providing a json string with user details
+    // Add user from data file
     addUserFromJSON = (userJSON) => {
         let user = new User();
         // If can't read user from JSON, return error (false)
@@ -80,6 +93,7 @@ export class Users {
         // If password matches, generate a token and return it
         let tokenID = uuidv4();
         user.currentTokenID = tokenID;
+        user.updated = true;
         return tokenID;
     }
 }
