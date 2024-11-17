@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'url';
 import { WebSocketServer } from 'ws';
-import { Tokens } from './tokens.js';
+import { Users } from './users.js';
 import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 
@@ -10,11 +10,12 @@ const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const tokens = new Tokens();
 const wss = new WebSocketServer({
     port: PORT,
 });
 console.log(`Server running on http://${HOST}:${PORT}`);
+const users = new Users();
+setInterval(() => { console.log(users)}, 3000);
 
 wss.on('connection', (ws, req) => {
     console.log(`${req.socket.remoteAddress} connected`);
@@ -24,11 +25,13 @@ wss.on('connection', (ws, req) => {
 
         // Create account
         if(res.messageType === "createAccount") {
-            let token = tokens.createToken(res.username, res.password);
-            if(token) {
+            let user = users.addUser(res.username, res.password);
+            if(user) {
+                let token = users.validateUser(res.username, res.password);
                 let ret = JSON.stringify({
                     messageType: 'createAccount',
                     status: 200,
+                    username: res.username,
                     token: token
                 });
                 ws.send(ret);
@@ -37,6 +40,7 @@ wss.on('connection', (ws, req) => {
                 let ret = JSON.stringify({
                     messageType: 'createAccount',
                     status: 401,
+                    username: res.username,
                     token: ""
                 });
                 ws.send(ret);
