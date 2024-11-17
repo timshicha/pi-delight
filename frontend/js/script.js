@@ -43,13 +43,3 @@ document.getElementById("connectBtn").addEventListener('click', () => {
 document.getElementById("disconnectBtn").addEventListener('click', () => {
     ws.disconnect();
 });
-document.getElementById("createAccountBtn").addEventListener('click', () => {
-    let username = document.getElementById("createAccountUsernameInput").value;
-    let password = document.getElementById("createAccountPasswordInput").value;
-    ws.send(JSON.stringify({messageType: "createAccount", username: username, password: password}));
-});
-document.getElementById("loginBtn").addEventListener('click', () => {
-    let username = document.getElementById("loginUsernameInput").value;
-    let password = document.getElementById("loginPasswordInput").value;
-    ws.send(JSON.stringify({messageType: "login", username: username, password: password}));
-});
