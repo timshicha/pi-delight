@@ -4,6 +4,9 @@ import PiDelightSocket from "./PiDelightSocket";
 const HOST = '192.168.0.23';
 const PORT = 80;
 
+// On page load, they're not logged in.
+localStorage.setItem("loggedIn", false);
+
 var ws = new PiDelightSocket(HOST, PORT);
 ws.connect(() => {});
 ws.ws.onmessage = (event) => wsOnMessage(event);
@@ -20,11 +23,23 @@ const wsOnMessage = (event) => {
         else {
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
+            localStorage.setItem("loggedIn", true);
             console.log("User created");
+        }
+    }
+
+    else if(data.messageType === "validateUser") {
+        if(data.error) {
+            console.log(data.error);
+        }
+        else {
+            console.log("Logged in.");
+            localStorage.setItem("loggedIn", true);
         }
     }
 }
 
+// When websocket connects, attempt to log in
 ws.ws.onopen = () => {
     // If user already made a username, they should have a username and
     // token stored in their local storage.
