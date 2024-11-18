@@ -9,30 +9,7 @@ var ws = new PiDelightSocket(HOST, PORT);
 const wsOnMessage = (event) => {
     const data = JSON.parse(event.data);
 
-    // If create account response
-    if(data.messageType === 'createAccount') {
-        if(data.status == 200) {
-            // Store the token in local storage (not safe, don't try at home).
-            localStorage.setItem('username', data.username);
-            localStorage.setItem('token', data.token);
-            console.log("Logged in. Token: " + data.token);
-        }
-        else {
-            console.log("Could not log in.");
-        }
-    }
-    // If login response
-    else if(data.messageType === 'login') {
-        if(data.status == 200) {
-            // Store the token in local storage (not safe)
-            localStorage.setItem('username', data.username);
-            localStorage.setItem('token', data.token);
-            console.log("Loggen in. Token: " + data.token);
-        }
-        else {
-            console.log("Could not log in.");
-        }
-    }
+    console.log(data);
 }
 
 document.getElementById("connectBtn").addEventListener('click', () => {
@@ -42,4 +19,12 @@ document.getElementById("connectBtn").addEventListener('click', () => {
 
 document.getElementById("disconnectBtn").addEventListener('click', () => {
     ws.disconnect();
+});
+
+document.getElementById("createUserBtn").addEventListener('click', () => {
+    let username = document.getElementById("createUserInput").value;
+    ws.send(JSON.stringify({
+        messageType: "createUser",
+        username: username
+    }));
 });
