@@ -65,13 +65,33 @@ wss.on('connection', (ws, req) => {
             // Otherwise create user
             const usedUUID = uuidv4();
             users[res.username] = {
-                userId: usedUUID,
-                userSocket: ws
+                token: usedUUID,
+                socket: ws
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
                 username: res.username,
                 token: usedUUID
+            }));
+            ws.username = res.username;
+            return;
+        }
+
+        // If requested to validate a user
+        else if(res.messageType === 'validateUser') {
+            // Make sure the username exists and the tokens match
+            if(res.username && res.username in users &&
+                users[res.username].token === res.token) {
+                ws.username = res.username;
+                ws.send(JSON.stringify({
+                    messageType: 'validateUser',
+                    username: res.username
+                }));
+                return;
+            }
+            ws.send(JSON.stringify({
+                messageType: 'validateUser',
+                error: 'Could not validate user.'
             }));
             return;
         }
