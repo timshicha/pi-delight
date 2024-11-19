@@ -16,7 +16,11 @@ app.use(express.static(path.join(__dirname)));
 
 // Catch-all route to serve index.html for any request
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    if(req.accepts('html')) {
+        res.sendFile(path.join(__dirname, 'index.html'));
+    } else {
+        res.status(404).send('Not found');
+    }
 });
 
 app.listen(PORT, () => {

@@ -17,13 +17,17 @@ console.log(`Server running on http://${HOST}:${PORT}`);
 
 // Keep track of users.
 // key = username
-// value = {userId, userSocket}
+// value = {userId, userSocket, online}
 const users = {};
 
 wss.on('connection', (ws, req) => {
     console.log(`${req.socket.remoteAddress} connected`);
+    ws.userData = {
+        username: ""
+    };
 
     ws.on('message', (data) => {
+        console.log("Message from " + ws.username);
         let res;
         try {
             res = JSON.parse(data);
@@ -66,7 +70,8 @@ wss.on('connection', (ws, req) => {
             const usedUUID = uuidv4();
             users[res.username] = {
                 token: usedUUID,
-                socket: ws
+                socket: ws,
+                online: true
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
@@ -83,6 +88,7 @@ wss.on('connection', (ws, req) => {
             if(res.username && res.username in users &&
                 users[res.username].token === res.token) {
                 ws.username = res.username;
+                users[res.username].online = true;
                 ws.send(JSON.stringify({
                     messageType: 'validateUser',
                     username: res.username
@@ -96,9 +102,33 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        // For anything else, a user must validate themselves first
+        if(!res.username || !(res.username in users) ||
+            users[res.username].token !== res.token) {
+                ws.send(JSON.stringify({
+                    messageType: 'loggedOut'
+                }));
+                return;
+        }
+
+        // If requested for list of users online
+        if(res.messageType === 'usersOnline') {
+            const keys = Object.keys(users).filter(key => users[key].online == true);
+            const keysAsJson = JSON.stringify(keys);
+            ws.send(JSON.stringify({
+                messageType: 'usersOnline',
+                users: keysAsJson
+            }));
+            return;
+        }
+
     });
 
-    ws.on('close', (ws) => {
-        console.log(`${ws} disconnected`);    
+    ws.on('close', () => {
+        // Record the user as offline (if they are registered)
+        if(ws.username && ws.username in users) {
+            users[ws.username].online = false;
+        }
+        console.log(`${ws.username} disconnected`);
     });
 });

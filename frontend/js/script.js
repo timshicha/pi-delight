@@ -1,6 +1,4 @@
-import { validate } from "uuid";
-import PiDelightSocket from "./PiDelightSocket";
-import { registerPage } from "./register";
+import PiDelightSocket from "./PiDelightSocket.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -17,6 +15,9 @@ var ws = new PiDelightSocket(HOST, PORT);
 ws.connect(() => {});
 ws.ws.onmessage = (event) => wsOnMessage(event);
 
+var username;
+var token;
+
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
     const data = JSON.parse(event.data);
@@ -28,6 +29,8 @@ const wsOnMessage = (event) => {
             document.getElementById("usernameInputError").innerText = data.error;
         }
         else {
+            username = data.username;
+            token = data.token;
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
@@ -43,10 +46,22 @@ const wsOnMessage = (event) => {
         }
         else {
             console.log("Logged in.");
+            username = localStorage.getItem("username");
+            token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
             currentPage = 'home';
             updatePage();
         }
+    }
+
+    else if(data.messageType === "usersOnline") {
+        document.getElementById("usersOnline").innerText = data.users;
+    }
+
+    else if(data.messageType === "loggedOut") {
+        localStorage.setItem("loggedIn", false);
+        currentPage = 'register';
+        updatePage();
     }
 }
 
@@ -66,15 +81,18 @@ ws.ws.onopen = () => {
     }
 }
 
+const clearPages = () => {
+    document.getElementById("registerPage").style.display = "none";
+    document.getElementById("homePage").style.display = "none";
+}
 const updatePage = () => {
-    let pageHTML;
+    clearPages();
     if(currentPage === 'register') {
-        pageHTML = registerPage();
+        document.getElementById("registerPage").style.display = "block";
     }
     else {
-        pageHTML = "logged in";
+        document.getElementById("homePage").style.display = "block";
     }
-    document.getElementById("appContainer").innerHTML = pageHTML;
 }
 
 document.getElementById("registerForm").addEventListener('submit', (event) => {
@@ -83,5 +101,14 @@ document.getElementById("registerForm").addEventListener('submit', (event) => {
     ws.send(JSON.stringify({
         messageType: "createUser",
         username: username
+    }));
+});
+
+document.getElementById("usersOnlineBtn").addEventListener('click', () => {
+    console.log("message sent:" + username +  token);
+    ws.send(JSON.stringify({
+        messageType: "usersOnline",
+        username: username,
+        token: token
     }));
 });
