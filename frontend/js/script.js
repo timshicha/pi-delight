@@ -1,8 +1,14 @@
 import { validate } from "uuid";
 import PiDelightSocket from "./PiDelightSocket";
+import { registerPage } from "./register";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
+
+var currentPage = 'register';
+// Possible states:
+// - home
+// - register
 
 // On page load, they're not logged in.
 localStorage.setItem("loggedIn", false);
@@ -26,6 +32,8 @@ const wsOnMessage = (event) => {
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
             console.log("User created");
+            currentPage = 'home';
+            updatePage();
         }
     }
 
@@ -36,6 +44,8 @@ const wsOnMessage = (event) => {
         else {
             console.log("Logged in.");
             localStorage.setItem("loggedIn", true);
+            currentPage = 'home';
+            updatePage();
         }
     }
 }
@@ -54,6 +64,17 @@ ws.ws.onopen = () => {
             token: token
         }));
     }
+}
+
+const updatePage = () => {
+    let pageHTML;
+    if(currentPage === 'register') {
+        pageHTML = registerPage();
+    }
+    else {
+        pageHTML = "logged in";
+    }
+    document.getElementById("appContainer").innerHTML = pageHTML;
 }
 
 document.getElementById("registerForm").addEventListener('submit', (event) => {
