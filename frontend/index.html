@@ -3,11 +3,21 @@
     <head>
         <title>Pi Delight Home</title>
         <script type="module" src="js/script.js"></script>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/register.css">
+        <script type="module" src="/js/script.js"></script>
     </head>
     <body>
-        <h3 id="username"></h3>
-        <h4>Create user</h4>
-        <input type="text" id="createUserInput">
-        <button id="createUserBtn">Create</button>
+        <form id="registerForm">
+            <h3 class="formTitle">Register to play. It's easy!</h3>
+            <label for="usernameInput" class="prompt">Create username:</label>
+            <input type="text" name="usernameInput" id="usernameInput" class="promptInput usernameInput" placeholder="Username">
+            <button type="submit" class="promptBtn">Continue</button>
+            <p id="usernameInputError" class="inputError"></p>
     </body>
 </html>

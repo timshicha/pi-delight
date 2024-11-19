@@ -19,6 +19,7 @@ const wsOnMessage = (event) => {
     if(data.messageType === "createUser") {
         if(data.error) {
             console.log(data.error);
+            document.getElementById("usernameInputError").innerText = data.error;
         }
         else {
             localStorage.setItem("username", data.username);
@@ -55,8 +56,9 @@ ws.ws.onopen = () => {
     }
 }
 
-document.getElementById("createUserBtn").addEventListener('click', () => {
-    let username = document.getElementById("createUserInput").value;
+document.getElementById("registerForm").addEventListener('submit', (event) => {
+    event.preventDefault();
+    const username = document.getElementById("usernameInput").value;
     ws.send(JSON.stringify({
         messageType: "createUser",
         username: username

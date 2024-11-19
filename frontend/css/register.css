@@ -1,0 +1,25 @@
+
+#registerForm {
+    background-color: rgb(170, 170, 170);
+    width: 95%;
+    margin: auto;
+    margin-top: 30px;
+    text-align: center;
+    padding: 10px;
+    padding-top: 20px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: black 5px solid;
+}
+
+.usernameInput {
+    width: 90%;
+}
+
+.inputError {
+    height: 20px;
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color: black;
+}
