@@ -1,14 +1,18 @@
 
+#gamesList {
+    width: 95%;
+}
+
 #usersOnline {
     width: 95%;
+    padding-bottom: 10px;
     margin: auto;
     margin-top: 10px;
     text-align: center;
-    padding: 5px;
     box-sizing: border-box;
-    border-radius: 20px;
-    border: black 5px solid;
-    min-height: 300px;
+    min-height: 400px;
+    pointer-events: none;
+    user-select: none;
 }
 
 .userOnline {
@@ -26,4 +30,5 @@
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     color: black;
+    user-select: none;
 }

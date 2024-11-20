@@ -54,6 +54,14 @@
     background-color: rgb(120, 120, 210);
 }
 
+.roundedBox {
+    margin: auto;
+    padding: 5px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: black 5px solid;
+}
+
 .blackScrollBar::-webkit-scrollbar {
     width: 30px;
 }
