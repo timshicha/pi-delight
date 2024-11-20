@@ -1,4 +1,5 @@
 import PiDelightSocket from "./PiDelightSocket.js";
+import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -55,7 +56,22 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === "usersOnline") {
-        document.getElementById("usersOnline").innerText = data.users;
+        let usersOnline = JSON.parse(data.users);
+        // Remove yourself from the list
+        const index = usersOnline.indexOf(username);
+        if(index > -1) {
+            usersOnline.splice(index, 1);
+        }
+        let usersOnlineHtml = "";
+        console.log(usersOnline);
+        for (let i = 0; i < usersOnline.length; i++) {
+            console.log(usersOnline[i]);
+            usersOnlineHtml += generateUserHtml(usersOnline[i]);
+        }
+        if(usersOnline.length === 0) {
+            usersOnlineHtml = generateNoUsersHtml();
+        }
+        document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
     }
 
     else if(data.messageType === "loggedOut") {
@@ -95,20 +111,28 @@ const updatePage = () => {
     }
 }
 
+// Every second (or so), send update requests to the server based on what
+// page the user in on.
+const requestUpdates = () => {
+    if(currentPage === 'home') {
+        ws.send(JSON.stringify({
+            messageType: "usersOnline",
+            username: username,
+            token: token
+        }));
+    }
+}
+const requestUpdatesIntervalId = setInterval(requestUpdates, 1000);
+
+window.addEventListener('beforeunload', () => {
+    clearInterval(requestUpdatesIntervalId);
+})
+
 document.getElementById("registerForm").addEventListener('submit', (event) => {
     event.preventDefault();
     const username = document.getElementById("usernameInput").value;
     ws.send(JSON.stringify({
         messageType: "createUser",
         username: username
-    }));
-});
-
-document.getElementById("usersOnlineBtn").addEventListener('click', () => {
-    console.log("message sent:" + username +  token);
-    ws.send(JSON.stringify({
-        messageType: "usersOnline",
-        username: username,
-        token: token
     }));
 });

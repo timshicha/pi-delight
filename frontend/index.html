@@ -9,6 +9,7 @@
 
         <link rel="stylesheet" href="/css/style.css">
         <link rel="stylesheet" href="/css/register.css">
+        <link rel="stylesheet" href="/css/home.css">
         <script type="module" src="/js/script.js"></script>
     </head>
     <body>
@@ -19,14 +20,22 @@
                     <label for="usernameInput" class="prompt">Create username:</label>
                     <input type="text" name="usernameInput" id="usernameInput" class="promptInput usernameInput" placeholder="Username">
                     <button type="submit" class="promptBtn">Continue</button>
-                    <p id="usernameInputError" class="inputError"></p>
+                    <p id="usernameInputError" class="errorMessage"></p>
                 </form>
             </div>
-            <div id="homePage" style="display: none;">
+            <div id="homePage" class="pageBg blackScrollBar" style="display: none;">
                 logged in
                 <br>
-                <button id="usersOnlineBtn">See who's online</button>
-                <p id="usersOnline"></p>
+                <button onclick="localStorage.clear();">Logout</button>
+
+                <div>
+                    <div id="usersOnline" class="blackScrollBar purpleBg">
+                        <p class="formTitle">Players Online</p>
+                        <div id="usersOnlineContainer">
+                            <p class="errorMessage">There are no players online.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </body>

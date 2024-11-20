@@ -1,0 +1,29 @@
+
+#usersOnline {
+    width: 95%;
+    margin: auto;
+    margin-top: 10px;
+    text-align: center;
+    padding: 5px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: black 5px solid;
+    min-height: 300px;
+}
+
+.userOnline {
+    background-color: rgb(200, 200, 200);
+    border-radius: 10px;
+    padding: 1px;
+    margin: 10px auto;
+    width: 80%;
+}
+
+.userOnlineUsername {
+    display: inline-block;
+    font-size: 20px;
+    margin: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color: black;
+}
