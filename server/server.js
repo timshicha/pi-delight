@@ -20,6 +20,24 @@ console.log(`Server running on http://${HOST}:${PORT}`);
 // value = {userId, userSocket, online}
 const users = {};
 
+// Server Update ID's.
+// When a list of something periodically requested (like users online list)
+// changes, the server will change the ID of the list. If the client requests
+// for the same list with the same ID, the server won't send a response since
+// the ID did not change and the list is still the same.
+var lastUserListId = 0;
+
+// Commonly requested data from clients
+var usersOnline = [];
+var usersOnlineJson = JSON.stringify(usersOnline);
+
+// Update the list of users online
+const updateUsersOnlineList = () => {
+    usersOnline = Object.keys(users).filter(key => users[key].online == true);
+    usersOnlineJson = JSON.stringify(usersOnline);
+    lastUserListId++;
+}
+
 wss.on('connection', (ws, req) => {
     console.log(`${req.socket.remoteAddress} connected`);
     ws.userData = {
@@ -37,6 +55,7 @@ wss.on('connection', (ws, req) => {
                 messageType: 'createUser',
                 error: 'The data was sent in a bad format. (Probably not your fault).'
             }));
+            return;
         }
 
         // If requested to create a user
@@ -67,17 +86,18 @@ wss.on('connection', (ws, req) => {
             }
             
             // Otherwise create user
-            const usedUUID = uuidv4();
+            const userUUID = uuidv4();
             users[res.username] = {
-                token: usedUUID,
+                token: userUUID,
                 socket: ws,
                 online: true
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
                 username: res.username,
-                token: usedUUID
+                token: userUUID
             }));
+            updateUsersOnlineList();
             ws.username = res.username;
             return;
         }
@@ -93,6 +113,7 @@ wss.on('connection', (ws, req) => {
                     messageType: 'validateUser',
                     username: res.username
                 }));
+                updateUsersOnlineList();
                 return;
             }
             ws.send(JSON.stringify({
@@ -113,11 +134,16 @@ wss.on('connection', (ws, req) => {
 
         // If requested for list of users online
         if(res.messageType === 'usersOnline') {
+            // If the list of users hasn't changed.
+            if(res.lastUserListId == lastUserListId) {
+                return;
+            }
             const keys = Object.keys(users).filter(key => users[key].online == true);
             const keysAsJson = JSON.stringify(keys);
             ws.send(JSON.stringify({
                 messageType: 'usersOnline',
-                users: keysAsJson
+                users: keysAsJson,
+                lastUserListId: lastUserListId
             }));
             return;
         }
@@ -130,5 +156,6 @@ wss.on('connection', (ws, req) => {
             users[ws.username].online = false;
         }
         console.log(`${ws.username} disconnected`);
+        updateUsersOnlineList();
     });
 });

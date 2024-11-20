@@ -18,6 +18,12 @@ ws.ws.onmessage = (event) => wsOnMessage(event);
 
 var username;
 var token;
+// Server Update ID's.
+// When a list of something periodically requested (like users online list)
+// changes, the server will change the ID of the list. If the client requests
+// for the same list with the same ID, the server won't send a response since
+// the ID did not change and the list is still the same.
+var lastUserListId = -1;
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -57,15 +63,14 @@ const wsOnMessage = (event) => {
 
     else if(data.messageType === "usersOnline") {
         let usersOnline = JSON.parse(data.users);
+        lastUserListId = data.lastUserListId;
         // Remove yourself from the list
         const index = usersOnline.indexOf(username);
         if(index > -1) {
             usersOnline.splice(index, 1);
         }
         let usersOnlineHtml = "";
-        console.log(usersOnline);
         for (let i = 0; i < usersOnline.length; i++) {
-            console.log(usersOnline[i]);
             usersOnlineHtml += generateUserHtml(usersOnline[i]);
         }
         if(usersOnline.length === 0) {
@@ -100,6 +105,7 @@ ws.ws.onopen = () => {
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
+    lastUserListId = -1;
 }
 const updatePage = () => {
     clearPages();
@@ -118,7 +124,8 @@ const requestUpdates = () => {
         ws.send(JSON.stringify({
             messageType: "usersOnline",
             username: username,
-            token: token
+            token: token,
+            lastUserListId: lastUserListId
         }));
     }
 }
