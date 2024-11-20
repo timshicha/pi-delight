@@ -26,13 +26,13 @@
             <div id="homePage" class="pageBg blackScrollBar" style="display: none;">
                 logged in
                 <br>
-                <button onclick="localStorage.clear();">Logout</button>
+                <button id="logoutBtn">Logout</button>
 
                 <div>
                     <div id="usersOnline" class="blackScrollBar purpleBg">
                         <p class="formTitle">Players Online</p>
                         <div id="usersOnlineContainer">
-                            <p class="errorMessage">There are no players online.</p>
+                            <img src="/assets/loading.gif" style="width:50px"/>
                         </div>
                     </div>
                 </div>

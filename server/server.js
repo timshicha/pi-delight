@@ -58,8 +58,20 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        // If requested to log out
+        if(res.messageType === 'logout') {
+            if(ws.username && ws.username in users) {
+                users[ws.username].online = false;
+            }
+            console.log(`${ws.username} logged out`);
+            updateUsersOnlineList();
+            ws.send(JSON.stringify({
+                messageType: 'logout'
+            }));
+        }
+
         // If requested to create a user
-        if(res.messageType === 'createUser') {
+        else if(res.messageType === 'createUser') {
             // If username not provided
             if(!res.username) {
                 ws.send(JSON.stringify({

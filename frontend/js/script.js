@@ -30,7 +30,14 @@ const wsOnMessage = (event) => {
     const data = JSON.parse(event.data);
     console.log(data);
 
-    if(data.messageType === "createUser") {
+    if(data.messageType === "logout") {
+        localStorage.clear();
+        username = null;
+        token = null;
+        lastUserListId = -1;
+    }
+
+    else if(data.messageType === "createUser") {
         if(data.error) {
             console.log(data.error);
             document.getElementById("usernameInputError").innerText = data.error;
@@ -129,11 +136,18 @@ const requestUpdates = () => {
         }));
     }
 }
+
+const logout = () => {
+    ws.send(JSON.stringify({
+        messageType: 'logout'
+    }));
+}
+
 const requestUpdatesIntervalId = setInterval(requestUpdates, 1000);
 
 window.addEventListener('beforeunload', () => {
     clearInterval(requestUpdatesIntervalId);
-})
+});
 
 document.getElementById("registerForm").addEventListener('submit', (event) => {
     event.preventDefault();
@@ -142,4 +156,8 @@ document.getElementById("registerForm").addEventListener('submit', (event) => {
         messageType: "createUser",
         username: username
     }));
+});
+
+document.getElementById("logoutBtn").addEventListener('click', () => {
+    logout();
 });
