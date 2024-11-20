@@ -115,12 +115,16 @@ ws.ws.onopen = () => {
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
+    document.getElementById("matchPage").style.display = "none";
     lastUserListId = -1;
 }
 const updatePage = () => {
     clearPages();
     if(currentPage === 'register') {
         document.getElementById("registerPage").style.display = "block";
+    }
+    else if(currentPage === 'match') {
+        document.getElementById("matchPage").style.display = "block";
     }
     else {
         document.getElementById("homePage").style.display = "block";
@@ -152,6 +156,16 @@ window.addEventListener('beforeunload', () => {
     clearInterval(requestUpdatesIntervalId);
 });
 
+// Since this is one page, rewrite the back button to go back in the game
+// rather than back to previous url.
+window.onpopstate = (event) => {
+    if(currentPage === 'match') {
+        currentPage = 'home';
+        updatePage();
+        event.preventDefault();
+    }
+}
+
 document.getElementById("registerForm").addEventListener('submit', (event) => {
     event.preventDefault();
     const username = document.getElementById("usernameInput").value;
@@ -159,6 +173,13 @@ document.getElementById("registerForm").addEventListener('submit', (event) => {
         messageType: "createUser",
         username: username
     }));
+});
+
+document.getElementById("matchCard").addEventListener('click', () => {
+    currentPage = 'match';
+    console.log("match");
+    history.pushState(null, null);
+    updatePage();
 });
 
 document.getElementById("logoutBtn").addEventListener('click', () => {

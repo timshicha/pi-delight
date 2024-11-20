@@ -6,6 +6,7 @@
 #gamesList {
     width: 95%;
     padding-bottom: 25px;
+    user-select: none;
 }
 
 .game {
@@ -34,6 +35,7 @@
 .gameIcon {
     max-width: 90%;
     margin-top: 0px;
+    -webkit-user-drag: none;
 }
 
 #usersOnline {
