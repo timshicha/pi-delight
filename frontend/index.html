@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="/css/style.css">
         <link rel="stylesheet" href="/css/register.css">
         <link rel="stylesheet" href="/css/home.css">
+        <link rel="stylesheet" href="/css/lobby.css">
         <script type="module" src="/js/script.js"></script>
     </head>
     <body>
@@ -46,6 +47,23 @@
             </div>
 
             <div id="matchPage" style="display: none;">
+                <div class="lobbyDiv roundedBox purpleBg">
+                    <p class="formTitle">Lobby</p>
+                    <div id="lobbyInvitePlayersDiv">
+                        <div class="userOnline invitePlayerDiv">
+                            <p class="userOnlineUsername invitePlayerText">This is my name erty</p>
+                            <input type="image" src="/assets/plusIcon.png" alt="Invite" class="inviteBtn" />
+                            <img src="/assets/checkmarkIcon.png" alt="Invited" class="invitedIcon" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="inviteBox" class="inviteBox">
+                <p id="invitePrompt" class="errorMessage"></p>
+                <div class="inviteBtnsBox">
+                    <button id="acceptInviteBtn" class="inviteResponseBtn">Accept</button>
+                    <button id="declineInviteBtn" class="inviteResponseBtn">Decline</button>
+                </div>
             </div>
         </div>
     </body>

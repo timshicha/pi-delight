@@ -1,6 +1,7 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
+import { generateInvitePlayerHtml } from "./lobbyHtml.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -25,6 +26,7 @@ var token;
 // for the same list with the same ID, the server won't send a response since
 // the ID did not change and the list is still the same.
 var lastUserListId = -1;
+var usersOnline = [];
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -64,29 +66,56 @@ const wsOnMessage = (event) => {
             username = localStorage.getItem("username");
             token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
-            currentPage = 'home';
+            // currentPage = 'home';
+            currentPage = 'match';
             updatePage();
         }
     }
 
     else if(data.messageType === "usersOnline") {
-        let usersOnline = JSON.parse(data.users);
+        let usersOnlineTemp = JSON.parse(data.users);
         lastUserListId = data.lastUserListId;
         // Remove yourself from the list
-        const index = usersOnline.indexOf(username);
+        const index = usersOnlineTemp.indexOf(username);
         if(index > -1) {
-            usersOnline.splice(index, 1);
+            usersOnlineTemp.splice(index, 1);
         }
+        usersOnline = usersOnlineTemp;
         let usersOnlineHtml = "";
+
+        // If on home screen, generate HTML for users online.
+        if(currentPage === 'home') {
+            for (let i = 0; i < usersOnline.length; i++) {
+                usersOnlineHtml += generateUserHtml(usersOnline[i]);
+            }
+            if(usersOnline.length === 0) {
+                usersOnlineHtml = generateNoUsersHtml();
+            }
+            document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
+        }
+        // Otherwise generate HTML for lobby invites
+        let invitePlayersHTML = "";
         for (let i = 0; i < usersOnline.length; i++) {
-            usersOnlineHtml += generateUserHtml(usersOnline[i]);
+            invitePlayersHTML += generateInvitePlayerHtml(usersOnline[i], false);
         }
-        if(usersOnline.length === 0) {
-            usersOnlineHtml = generateNoUsersHtml();
+        document.getElementById("lobbyInvitePlayersDiv").innerHTML = invitePlayersHTML;
+        // For each player, attach a function that sends a request
+        for (let i = 0; i < usersOnline.length; i++) {
+            document.getElementById(`invitePlayerButton${usersOnline[i]}`).addEventListener('click', () => {
+                // Send request
+                ws.send(JSON.stringify({
+                    username: username,
+                    token: token,
+                    messageType: 'invite',
+                    game: 'Match',
+                    to: usersOnline[i]
+                }));
+            });
         }
-        document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
+    }
 
-
+    else if(data.messageType === 'invite') {
+        showInvite(data.from, data.game);
     }
 
     else if(data.messageType === "loggedOut") {
@@ -112,6 +141,71 @@ ws.ws.onopen = () => {
     }
 }
 
+// Keep track of what intervals were set.
+// If another invite comes in, clear the previous invite's intervals
+// so they don't interfere with each other and glitch.
+var inviteBoxIntervalIds = [null, null, null];
+const clearShowInviteIntervals = () => {
+    for (let i = 0; i < inviteBoxIntervalIds.length; i++) {
+        clearInterval(inviteBoxIntervalIds[i]);
+    }
+}
+const showInvite = (from, game) => {
+    clearShowInviteIntervals();
+    console.log("here");
+    let inviteBox = document.getElementById("inviteBox");
+    document.getElementById("invitePrompt").innerText = `${from} invited you to play ${game}!`;
+    document.getElementById("acceptInviteBtn").addEventListener('click', () => {
+        acceptInvite(from, game);
+    });
+    document.getElementById("declineInviteBtn").addEventListener('click', declineInvite);
+    // Start fading in
+    inviteBox.style.opacity = 0;
+    inviteBox.style.display = 'block';
+    let opacity = 0;
+    inviteBoxIntervalIds[0] = setInterval(() => {
+        if(opacity >= 1) {
+            clearInterval(inviteBoxIntervalIds[0]);
+            inviteBoxIntervalIds[1] = setTimeout(fadeOut, 5000);
+        }
+        else {
+            opacity += 0.1;
+            inviteBox.style.opacity = opacity;
+        }
+    }, 50);
+
+    const fadeOut = () => {
+        let opacity = 1;
+        inviteBoxIntervalIds[2] = setInterval(() => {
+            if(opacity <= 0) {
+                clearInterval(inviteBoxIntervalIds[2]);
+                inviteBox.style.display = 'none';
+            }
+            else {
+                opacity -= 0.1;
+                inviteBox.style.opacity = opacity;
+            }
+        }, 50);
+    }
+}
+
+const acceptInvite = (from, game) => {
+    console.log("accepted");
+    ws.send(JSON.stringify({
+        messageType: 'join',
+        username: username,
+        token: token,
+        game: game,
+        player: from
+    }));
+}
+
+const declineInvite = () => {
+    console.log("declined");
+    clearShowInviteIntervals();
+    document.getElementById("inviteBox").style.display = 'none';
+}
+
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
@@ -134,7 +228,7 @@ const updatePage = () => {
 // Every second (or so), send update requests to the server based on what
 // page the user in on.
 const requestUpdates = () => {
-    if(currentPage === 'home') {
+    if(currentPage !== 'register') {
         ws.send(JSON.stringify({
             messageType: "usersOnline",
             username: username,
@@ -180,8 +274,4 @@ document.getElementById("matchCard").addEventListener('click', () => {
     console.log("match");
     history.pushState(null, null);
     updatePage();
-});
-
-document.getElementById("logoutBtn").addEventListener('click', () => {
-    logout();
 });

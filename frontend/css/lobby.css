@@ -1,0 +1,90 @@
+
+
+.lobbyDiv {
+    margin-top: 30px;
+    height: 50px;
+    width: 95%;
+    text-align: center;
+    height: fit-content;
+    user-select: none;
+}
+
+.invitePlayerDiv {
+    display: relative;
+    text-align: left;
+}
+
+.invitePlayerText {
+    font-size: 18px;
+    padding: 10px;
+    padding-left: 5px;
+    overflow: hidden;
+    max-width: calc(100% - 90px);
+}
+
+.inviteBtn {
+    height: 40px;
+    margin: 7px;
+    background-color: rgb(20, 180, 20);
+    float: right;
+    border-radius: 5px;
+    cursor: pointer;
+    -webkit-user-drag: none;
+}
+.inviteBtn:hover {
+    background-color: rgb(10, 150, 10);
+}
+.inviteBtn:active {
+    background-color: rgb(50, 120, 50);
+}
+
+.invitedIcon {
+    height: 40px;
+    margin: 7px;
+    background-color: rgb(130, 130, 130);
+    float: right;
+    border-radius: 5px;
+    -webkit-user-drag: none;
+}
+
+#invitePrompt {
+    margin-left: 10px;
+    margin-bottom: 20px;;
+}
+
+.inviteBox {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgb(200, 200, 200);
+    border: black 4px solid;
+    border-radius: 10px;
+    width: 250px;
+    padding: 5px;
+    height: fit-content;
+    display: none;
+}
+
+.inviteBtnsBox {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.inviteResponseBtn {
+    display: inline-block;
+    margin: 2px 4px;
+    box-sizing: border-box;
+    width: 110px;
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.inviteResponseBtn:hover {
+    background-color: rgb(50, 50, 50);
+}

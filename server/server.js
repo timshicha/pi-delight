@@ -20,6 +20,11 @@ console.log(`Server running on http://${HOST}:${PORT}`);
 // value = {userId, userSocket, online}
 const users = {};
 
+// Keep track of games
+const games = {
+    match: {}
+};
+
 // Server Update ID's.
 // When a list of something periodically requested (like users online list)
 // changes, the server will change the ID of the list. If the client requests
@@ -45,7 +50,7 @@ wss.on('connection', (ws, req) => {
     };
 
     ws.on('message', (data) => {
-        console.log("Message from " + ws.username);
+        // console.log("Message from " + ws.username);
         let res;
         try {
             res = JSON.parse(data);
@@ -121,6 +126,7 @@ wss.on('connection', (ws, req) => {
                 users[res.username].token === res.token) {
                 ws.username = res.username;
                 users[res.username].online = true;
+                users[res.username].socket = ws;
                 ws.send(JSON.stringify({
                     messageType: 'validateUser',
                     username: res.username
@@ -160,12 +166,41 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        // If sent a game invite
+        if(res.messageType === 'invite') {
+            // If the other player isn't online, skip
+            if(!users[res.to] || !users[res.to].online || !users[res.to].socket) {
+                return;
+            }
+            // Make sure this player is in a match game that wasn't started
+            // and that the game isn't full.
+            //
+            // ............
+            //
+            // Otherwise send the request
+            users[res.to].socket.send(JSON.stringify({
+                messageType: 'invite',
+                game: 'Match',
+                from: res.username
+            }));
+            return;
+        }
+
+        // If joining a game
+        if(res.messageType === 'join') {
+            if(res.game === 'Match') {
+                console.log("accepted Match invite");
+            }
+            return;
+        }
+
     });
 
     ws.on('close', () => {
         // Record the user as offline (if they are registered)
         if(ws.username && ws.username in users) {
             users[ws.username].online = false;
+            users[ws.username].socket = null;
         }
         console.log(`${ws.username} disconnected`);
         updateUsersOnlineList();
