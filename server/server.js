@@ -203,6 +203,21 @@ wss.on('connection', (ws, req) => {
 
         console.log(res);
 
+        // If the user wants to refresh the current game state
+        if(res.messageType === 'refresh') {
+            // If not in a game, return
+            if(!users[res.username].currentGame) {
+                return;
+            }
+            // Send message of updated game to all players in the game
+            ws.send(JSON.stringify({
+                messageType: 'gameUpdate',
+                game: 'Match',
+                gameState: users[res.username].currentGame.getGameState()
+            }));
+            return;
+        }
+
         // If sent a game invite
         if(res.messageType === 'invite') {
             // If the other player isn't online, skip

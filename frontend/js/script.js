@@ -1,7 +1,7 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
-import { generateInvitePlayerHtml } from "./lobbyHtml.js";
+import { modifyLobby, generateInvitePlayerHtml } from "./lobbyHtml.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -116,6 +116,11 @@ const wsOnMessage = (event) => {
 
     else if(data.messageType === 'invite') {
         showInvite(data.from, data.game);
+    }
+
+    else if(data.messageType === 'gameUpdate') {
+        let gameState = data.gameState;
+        modifyLobby(gameState.players, 4, true);
     }
 
     else if(data.messageType === "loggedOut") {
@@ -234,6 +239,11 @@ const requestUpdates = () => {
             username: username,
             token: token,
             lastUserListId: lastUserListId
+        }));
+        ws.send(JSON.stringify({
+            messageType: 'refresh',
+            username: username,
+            token: token
         }));
     }
 }

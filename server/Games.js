@@ -17,7 +17,7 @@ const MATCH_CARDS = 20; // How many different match cards the FE has
 export class MatchGame {
     constructor () {
         this.admin = null;
-        this.players = {}; // username: {matches: 0,}
+        this.players = {}; // username: {matches: 0, gender: 'boy'}
         this.playerOrder = [];
         this.currentTurnIndex = null;
         this.gameState = "Waiting"; // Waiting, Active, or Finished
@@ -47,7 +47,8 @@ export class MatchGame {
             this.admin = username;
         }
         this.players[username] = {
-            matches: 0
+            matches: 0,
+            gender: 'boy'
         };
         // Add them to the turn list
         this.playerOrder.push(username);
@@ -215,8 +216,18 @@ export class MatchGame {
     }
 
     getGameState = () => {
+        let players = [];
+        // For each player
+        let usernames = Object.keys(this.players);
+        for (let i = 0; i < this.playerCount; i++) {
+            players.push({
+                name: usernames[i],
+                gender: this.players[usernames[i]].gender,
+                matches: this.players[usernames[i]].matches,
+            });
+        }
         return {
-            players: this.playerOrder,
+            players: players,
             gameState: this.gameState,
             cardsLeft: this.cardsLeft,
         };
