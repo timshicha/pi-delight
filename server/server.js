@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
+import { MatchGame } from './Games.js';
 
 dotenv.config();
 const HOST = process.env.VITE_DEV_SERVER_HOST
@@ -17,12 +18,12 @@ console.log(`Server running on http://${HOST}:${PORT}`);
 
 // Keep track of users.
 // key = username
-// value = {userId, userSocket, online}
+// value = {userId, userSocket, online, currentGame}
 const users = {};
 
-// Keep track of games
+// Keep track of games.
 const games = {
-    match: {}
+    match: []
 };
 
 // Server Update ID's.
@@ -107,7 +108,8 @@ wss.on('connection', (ws, req) => {
             users[res.username] = {
                 token: userUUID,
                 socket: ws,
-                online: true
+                online: true,
+                currentGame: null
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
@@ -192,6 +194,30 @@ wss.on('connection', (ws, req) => {
                 console.log("accepted Match invite");
             }
             return;
+        }
+
+        // If creating a game
+        if(res.messageType === 'createGame') {
+            // Make sure player isn't already in a game
+            if(users[res.username].currentGame) {
+                ws.send(JSON.stringify({
+                    messageType: 'createGame',
+                    error: 'You are already in a game.'
+                }));
+                return;
+            }
+            // If creating a match game
+            if(res.game === 'Match') {
+                console.log("created Match game");
+                let game = new MatchGame();
+                users[res.username].currentGame = game;
+                games.match.push(game);
+                ws.send(JSON.stringify({
+                    messageType: 'createGame',
+                    game: 'Match'
+                }));
+                return;
+            }
         }
 
     });

@@ -275,3 +275,12 @@ document.getElementById("matchCard").addEventListener('click', () => {
     history.pushState(null, null);
     updatePage();
 });
+
+document.getElementById("createMatchGameBtn").addEventListener('click', () => {
+    ws.send(JSON.stringify({
+        username: username,
+        token: token,
+        messageType: 'createGame',
+        game: 'Match'
+    }));
+});
