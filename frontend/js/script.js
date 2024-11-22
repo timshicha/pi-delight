@@ -132,7 +132,7 @@ ws.ws.onopen = () => {
     // Attempt to validate user
     let username = localStorage.getItem("username");
     let token = localStorage.getItem("token");
-    if(username && token) {
+    if(username) {
         ws.send(JSON.stringify({
             messageType: "validateUser",
             username: username,

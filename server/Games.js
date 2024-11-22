@@ -72,6 +72,10 @@ export class MatchGame {
         return this.playerOrder[this.currentTurnIndex];
     }
 
+    getPlayers = () => {
+        return this.playerOrder;
+    }
+
     // Remove a player from the game
     removePlayer = (username) => {
         // If the player is not in the game
@@ -208,6 +212,14 @@ export class MatchGame {
         // Now shuffle the array
         this.board = shuffleArray(this.board);
         return true;
+    }
+
+    getGameState = () => {
+        return {
+            players: this.playerOrder,
+            gameState: this.gameState,
+            cardsLeft: this.cardsLeft,
+        };
     }
     
 }

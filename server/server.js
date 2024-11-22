@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { MatchGame } from './Games.js';
 
 dotenv.config();
+const TEST_USERNAMES = ['Tim', 'Joe'];
 const HOST = process.env.VITE_DEV_SERVER_HOST
 const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +19,7 @@ console.log(`Server running on http://${HOST}:${PORT}`);
 
 // Keep track of users.
 // key = username
-// value = {userId, userSocket, online, currentGame}
+// value = {token, socket, online, currentGame}
 const users = {};
 
 // Keep track of games.
@@ -62,6 +63,26 @@ wss.on('connection', (ws, req) => {
                 error: 'The data was sent in a bad format. (Probably not your fault).'
             }));
             return;
+        }
+
+        // FOR TESTING PURPOSES ONLY (allow 'Tim' and 'Joe')
+        if(process.env.ISTESTING && TEST_USERNAMES.includes(res.username)) {
+            // If not yet added
+            if(!users[res.username]) {
+                users[res.username] = {
+                    token: '',
+                    socket: ws,
+                    online: true,
+                    currentGame: null
+                };
+                updateUsersOnlineList();
+            }
+            else if(!users[res.username].online) {
+                users[res.username].socket = ws;
+                users[res.username].online = true;
+                updateUsersOnlineList();
+            }
+            ws.username = res.username;
         }
 
         // If requested to log out
@@ -121,8 +142,16 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
-        // If requested to validate a user
+        // If requested to validate a user (and we're not testing with a test user)
         else if(res.messageType === 'validateUser') {
+            // If we're just testing with a test username
+            if(process.env.ISTESTING && TEST_USERNAMES.includes(res.username)) {
+                ws.send(JSON.stringify({
+                    messageType: 'validateUser',
+                    username: res.username
+                }));
+                return;
+            }
             // Make sure the username exists and the tokens match
             if(res.username && res.username in users &&
                 users[res.username].token === res.token) {
@@ -143,8 +172,12 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        // If testing with test user, skip validation
+        if(process.env.ISTESTING && TEST_USERNAMES.includes(res.username)) {
+            // Skip other if statement
+        }
         // For anything else, a user must validate themselves first
-        if(!res.username || !(res.username in users) ||
+        else if(!res.username || !(res.username in users) ||
             users[res.username].token !== res.token) {
                 ws.send(JSON.stringify({
                     messageType: 'loggedOut'
@@ -236,6 +269,18 @@ wss.on('connection', (ws, req) => {
                 messageType: 'join',
                 message: `You joined ${res.player}.`
             }));
+            // Send message of updated game to all players in the game
+            let players = game.getPlayers();
+            for (let i = 0; i < players.length; i++) {
+                if(!users[players[i]] || !users[players[i]].socket) {
+                    continue;
+                }
+                users[players[i]].socket.send(JSON.stringify({
+                    messageType: 'gameUpdate',
+                    game: 'Match',
+                    gameState: game.getGameState()
+                }));
+            }
             return;
         }
 
@@ -253,12 +298,25 @@ wss.on('connection', (ws, req) => {
             if(res.game === 'Match') {
                 console.log("created Match game");
                 let game = new MatchGame();
+                game.addPlayer(res.username);
                 users[res.username].currentGame = game;
                 games.match.push(game);
                 ws.send(JSON.stringify({
                     messageType: 'createGame',
                     game: 'Match'
                 }));
+                // Send message of updated game to all players in the game
+                let players = game.getPlayers();
+                for (let i = 0; i < players.length; i++) {
+                    if(!users[players[i]] || !users[players[i]].socket) {
+                        continue;
+                    }
+                    users[players[i]].socket.send(JSON.stringify({
+                        messageType: 'gameUpdate',
+                        game: 'Match',
+                        gameState: game.getGameState()
+                    }));
+                }
                 return;
             }
         }
