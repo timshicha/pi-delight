@@ -88,3 +88,43 @@
 .inviteResponseBtn:hover {
     background-color: rgb(50, 50, 50);
 }
+
+.lobbyPlayersContainer {
+
+}
+
+.lobbyPlayer {
+    display: inline-block;
+    /* background-color: white; */
+    width: 35%;
+    min-height: 120px;
+    height: fit-content;
+    padding: 2%;
+    margin: 2%;
+}
+
+.lobbyPlayerIcon {
+    width: 80%;
+}
+
+.lobbyPlayerName {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    margin: 5px 0px 5px 0px;
+}
+
+.lobbyKickBtn {
+    width: 90%;
+    height: fit-content;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.lockedBtn {
+    opacity: 0.4;
+    cursor: pointer;
+    pointer-events: none;
+}

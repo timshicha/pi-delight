@@ -88,5 +88,5 @@ body {
     padding: 0px;
     margin: 0px;
     background-color: rgb(170, 170, 170);
-    touch-action: none;
+    /* touch-action: none; */
 }
