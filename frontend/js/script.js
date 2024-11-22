@@ -104,9 +104,9 @@ const wsOnMessage = (event) => {
             document.getElementById(`invitePlayerButton${usersOnline[i]}`).addEventListener('click', () => {
                 // Send request
                 ws.send(JSON.stringify({
+                    messageType: 'invite',
                     username: username,
                     token: token,
-                    messageType: 'invite',
                     game: 'Match',
                     to: usersOnline[i]
                 }));
@@ -195,7 +195,7 @@ const acceptInvite = (from, game) => {
         messageType: 'join',
         username: username,
         token: token,
-        game: game,
+        // game: game,
         player: from
     }));
 }
@@ -278,9 +278,9 @@ document.getElementById("matchCard").addEventListener('click', () => {
 
 document.getElementById("createMatchGameBtn").addEventListener('click', () => {
     ws.send(JSON.stringify({
+        messageType: 'createGame',
         username: username,
         token: token,
-        messageType: 'createGame',
         game: 'Match'
     }));
 });

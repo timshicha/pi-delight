@@ -38,6 +38,10 @@ export class MatchGame {
         if(this.playerCount >= 4) {
             return "The game is full.";
         }
+        // If the game is already started
+        if(this.gameState === 'Active') {
+            return "This game is already in progress.";
+        }
         // If this is the first player, they're the admin
         if(this.playerCount === 0) {
             this.admin = username;
@@ -48,6 +52,7 @@ export class MatchGame {
         // Add them to the turn list
         this.playerOrder.push(username);
         this.playerCount++;
+        return null;
     }
 
     nextTurn = () => {

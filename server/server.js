@@ -168,6 +168,8 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        console.log(res);
+
         // If sent a game invite
         if(res.messageType === 'invite') {
             // If the other player isn't online, skip
@@ -190,9 +192,50 @@ wss.on('connection', (ws, req) => {
 
         // If joining a game
         if(res.messageType === 'join') {
-            if(res.game === 'Match') {
-                console.log("accepted Match invite");
+            // Make sure player isn't already in a game
+            if(users[res.username].currentGame) {
+                ws.send(JSON.stringify({
+                    messageType: 'join',
+                    error: 'You are already in a game.'
+                }));
+                return;
             }
+            // Make sure the other player is valid and in a game
+            if(!res.player || !users[res.player]) {
+                ws.send(JSON.stringify({
+                    messageType: 'join',
+                    error: 'This player does not exist.'
+                }));
+                return;
+            }
+            // Make sure the other player is in a game
+            if(!users[res.player].currentGame) {
+                ws.send(JSON.stringify({
+                    messageType: 'join',
+                    error: 'This player is not in a game.'
+                }));
+                return;
+            }
+            // Otherwise try to join the player
+            
+            // If Match game
+            let game = users[res.player].currentGame;
+            let errorMessage = game.addPlayer(res.username);
+
+            // If error happened
+            if(errorMessage) {
+                ws.send(JSON.stringify({
+                    messageType: 'join',
+                    error: errorMessage
+                }));
+                return;
+            }
+            // Otherwise return success
+            users[res.username].currentGame = game;
+            ws.send(JSON.stringify({
+                messageType: 'join',
+                message: `You joined ${res.player}.`
+            }));
             return;
         }
 
