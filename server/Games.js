@@ -77,7 +77,18 @@ export class MatchGame {
         return this.playerOrder;
     }
 
-    // Remove a player from the game
+    // Delete this game from a list of match games
+    deleteGame = (gameList) => {
+        for (let i = 0; i < gameList.length; i++) {
+            if(this == gameList[i]) {
+                gameList.splice(i, 1);
+                return;
+            }
+        }
+    }
+
+    // Remove a player from the game.
+    // Return true if last player
     removePlayer = (username) => {
         // If the player is not in the game
         if(!(username in this.players)) {
@@ -85,11 +96,12 @@ export class MatchGame {
         }
         this.playerCount--;
         // If this is the last player, return true (game is deleted)
-        if(this.playerCount === 1) {
-            this.players.pop();
+        if(this.playerCount === 0) {
+            delete this.players[username];
             return true;
         }
         delete this.players[username];
+        console.log(Object.keys(this.players));
         // If it's the admin, promote another player to admin
         if(username === this.admin) {
             this.admin = Object.keys(this.players)[0];
@@ -223,14 +235,28 @@ export class MatchGame {
             players.push({
                 name: usernames[i],
                 gender: this.players[usernames[i]].gender,
-                matches: this.players[usernames[i]].matches,
+                matches: this.players[usernames[i]].matches
             });
         }
         return {
             players: players,
             gameState: this.gameState,
             cardsLeft: this.cardsLeft,
+            admin: this.admin
         };
     }
     
+}
+
+// Delete a game from dict of game lists.
+// Provide the fill dict and the game to delete.
+export const deleteGame = (games, game) => {
+    if(!game) {
+        return;
+    }
+    const gameType = null;
+    if(typeof(game) === MatchGame) {
+        gameType === 'match';
+    }
+    game.deleteGame(games[gameType]);
 }

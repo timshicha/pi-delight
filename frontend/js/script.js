@@ -120,7 +120,7 @@ const wsOnMessage = (event) => {
 
     else if(data.messageType === 'gameUpdate') {
         let gameState = data.gameState;
-        modifyLobby(gameState.players, 4, true);
+        modifyLobby(gameState.players, 4, username, gameState.admin, kickFunction);
     }
 
     else if(data.messageType === "loggedOut") {
@@ -192,6 +192,16 @@ const showInvite = (from, game) => {
             }
         }, 50);
     }
+}
+
+const kickFunction = (usernameToKick) => {
+    console.log('kick');
+    ws.send(JSON.stringify({
+        messageType: 'kick',
+        username: username,
+        token: token,
+        usernameToKick: usernameToKick
+    }));
 }
 
 const acceptInvite = (from, game) => {
@@ -292,5 +302,13 @@ document.getElementById("createMatchGameBtn").addEventListener('click', () => {
         username: username,
         token: token,
         game: 'Match'
+    }));
+});
+
+document.getElementById("leaveMatchGameBtn").addEventListener('click', () => {
+    ws.send(JSON.stringify({
+        messageType: 'leaveGame',
+        username: username,
+        token: token
     }));
 });

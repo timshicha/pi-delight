@@ -3,7 +3,7 @@ import { WebSocketServer } from 'ws';
 import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
-import { MatchGame } from './Games.js';
+import { deleteGame, MatchGame } from './Games.js';
 
 dotenv.config();
 const TEST_USERNAMES = ['Tim', 'Joe'];
@@ -294,6 +294,45 @@ wss.on('connection', (ws, req) => {
                     messageType: 'gameUpdate',
                     game: 'Match',
                     gameState: game.getGameState()
+                }));
+            }
+            return;
+        }
+
+        if(res.messageType === 'kick') {
+            let game = users[res.username].currentGame;
+            // Make sure the user is in a game, they are the
+            // admin, and the other player is in the game
+            if(game && res.username === game.admin &&
+                res.usernameToKick in game.players) {
+                // Remove player
+                const ret = game.removePlayer(res.usernameToKick);
+                users[res.usernameToKick].currentGame = null;
+                // If this was the last player, delete the game
+                if(ret) {
+                    deleteGame(game);
+                }
+                users[res.usernameToKick].socket.send(JSON.stringify({
+                    messageType: 'leaveGame',
+                    message: 'You have been kicked from the game.'
+                }));
+            }
+            return;
+        }
+
+        if(res.messageType === 'leaveGame') {
+            let game = users[res.username].currentGame;
+            // Make sure this player is in a game
+            if(game) {
+                const ret = game.removePlayer(res.username);
+                users[res.username].currentGame = null;
+                // If this was the last player, delete the game
+                if(ret) {
+                    deleteGame(game);
+                }
+                users[res.username].socket.send(JSON.stringify({
+                    messageType: 'leaveGame',
+                    message: 'You left the game.'
                 }));
             }
             return;

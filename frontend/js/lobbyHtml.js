@@ -18,7 +18,7 @@ export const generateInvitePlayerHtml = (username, invited) => {
 };
 
 // players: [{name: name, gender: gender}], ...]
-export const modifyLobby = (players, maxPlayers, isAdmin) => {
+export const modifyLobby = (players, maxPlayers, username, admin, kickFunction) => {
     const lobbyContainer = document.getElementById("lobbyPlayersContainer");
     const imgs = lobbyContainer.querySelectorAll("img");
     const names = lobbyContainer.querySelectorAll("p");
@@ -38,12 +38,24 @@ export const modifyLobby = (players, maxPlayers, isAdmin) => {
         if(players[i].name !== names[i].innerText) {
             names[i].innerText = players[i].name;
         }
+        const kickFunc = () => kickFunction(names[i].innerText);
         // If admin, show kick button
-        if(isAdmin && buttons[i].classList.contains('lockedBtn')) {
-            buttons[i].classList.remove('lockedBtn');
+        if(username === admin) {
+            buttons[i].classList.remove('invisible');
+            // Looking at admin, lock button to not
+            // allow admins to kick themselves
+            if(names[i].innerText === admin) {
+                buttons[i].classList.add('lockedBtn');
+                buttons[i].onclick = null;
+            }
+            else {
+                buttons[i].classList.remove('lockedBtn');
+                buttons[i].onclick = () => kickFunction(names[i].innerText);
+            }
         }
-        if(!isAdmin && !buttons[i].classList.contains('lockedBtn')) {
-            buttons[i].classList.add('lockedBtn');
+        else {
+            buttons[i].classList.add('invisible');
+            buttons[i].onclick = null;
         }
     }
     // For empty slots
@@ -57,8 +69,14 @@ export const modifyLobby = (players, maxPlayers, isAdmin) => {
         if(names[i].innerText !== ' ') {
             names[i].innerText = ' ';
         }
-        if(!buttons[i].classList.contains('lockedBtn')) {
+        if(username === admin) {
             buttons[i].classList.add('lockedBtn');
+            buttons[i].classList.remove('invisible');
+            buttons[i].onclick = () => kickFunction(names[i].innerText);
+        }
+        else {
+            buttons[i].classList.add('invisible');
+            buttons[i].onclick = null;
         }
     }
 }

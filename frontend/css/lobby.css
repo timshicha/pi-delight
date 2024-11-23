@@ -105,6 +105,7 @@
 
 .lobbyPlayerIcon {
     width: 80%;
+    -webkit-user-drag: none;
 }
 
 .lobbyPlayerName {
@@ -128,4 +129,8 @@
     opacity: 0.4;
     cursor: pointer;
     pointer-events: none;
+}
+
+.invisible {
+    display: none;
 }
