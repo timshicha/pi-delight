@@ -7,6 +7,7 @@
     text-align: center;
     height: fit-content;
     user-select: none;
+    max-width: 500px;
 }
 
 .invitePlayerDiv {
@@ -90,7 +91,6 @@
 }
 
 .lobbyPlayersContainer {
-
 }
 
 .lobbyPlayer {

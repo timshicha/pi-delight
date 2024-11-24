@@ -4,9 +4,10 @@ import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import { deleteGame, MatchGame } from './Games.js';
+import { Lobby } from './Lobby.js';
 
 dotenv.config();
-const TEST_USERNAMES = ['Tim', 'Joe'];
+const TEST_USERNAMES = ['Tim', 'Joe', 'Bob', 'Luke'];
 const HOST = process.env.VITE_DEV_SERVER_HOST
 const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
@@ -18,14 +19,20 @@ const wss = new WebSocketServer({
 console.log(`Server running on http://${HOST}:${PORT}`);
 
 // Keep track of users.
-// key = username
-// value = {token, socket, online, currentGame}
+// username: { token, socket, lobby, icon }
 const users = {};
 
-// Keep track of games.
-const games = {
-    match: []
-};
+/*
+Keep track of lobbies
+admin: { Obj[Lobby] }
+
+Lobby has the following:
+    players: [admin, user1, ...],
+    gameSelected: 'Match',
+    game: null or Obj[Match],
+    chat: null
+*/
+const lobbies = {};
 
 // Server Update ID's.
 // When a list of something periodically requested (like users online list)
@@ -40,7 +47,7 @@ var usersOnlineJson = JSON.stringify(usersOnline);
 
 // Update the list of users online
 const updateUsersOnlineList = () => {
-    usersOnline = Object.keys(users).filter(key => users[key].online == true);
+    usersOnline = Object.keys(users).filter(key => users[key].socket);
     usersOnlineJson = JSON.stringify(usersOnline);
     lastUserListId++;
 }
@@ -58,10 +65,6 @@ wss.on('connection', (ws, req) => {
             res = JSON.parse(data);
         }
         catch {
-            ws.send(JSON.stringify({
-                messageType: 'createUser',
-                error: 'The data was sent in a bad format. (Probably not your fault).'
-            }));
             return;
         }
 
@@ -72,15 +75,17 @@ wss.on('connection', (ws, req) => {
                 users[res.username] = {
                     token: '',
                     socket: ws,
-                    online: true,
-                    currentGame: null
+                    lobby: null,
+                    icon: 'boy0'
                 };
                 updateUsersOnlineList();
             }
-            else if(!users[res.username].online) {
+            else if(!users[res.username].socket) {
                 users[res.username].socket = ws;
-                users[res.username].online = true;
                 updateUsersOnlineList();
+                if(users[res.username].lobby) {
+                    users[res.username].lobby.sendRefresh();
+                }
             }
             ws.username = res.username;
         }
@@ -88,7 +93,7 @@ wss.on('connection', (ws, req) => {
         // If requested to log out
         if(res.messageType === 'logout') {
             if(ws.username && ws.username in users) {
-                users[ws.username].online = false;
+                users[ws.username].socket = null;
             }
             console.log(`${ws.username} logged out`);
             updateUsersOnlineList();
@@ -129,8 +134,8 @@ wss.on('connection', (ws, req) => {
             users[res.username] = {
                 token: userUUID,
                 socket: ws,
-                online: true,
-                currentGame: null
+                lobby: null,
+                icon: 'boy0'
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
@@ -156,13 +161,16 @@ wss.on('connection', (ws, req) => {
             if(res.username && res.username in users &&
                 users[res.username].token === res.token) {
                 ws.username = res.username;
-                users[res.username].online = true;
                 users[res.username].socket = ws;
                 ws.send(JSON.stringify({
                     messageType: 'validateUser',
                     username: res.username
                 }));
                 updateUsersOnlineList();
+                // If in a lobby, send refresh
+                if(users[res.username].lobby) {
+                    users[res.username].lobby.sendRefresh();
+                }
                 return;
             }
             ws.send(JSON.stringify({
@@ -191,7 +199,7 @@ wss.on('connection', (ws, req) => {
             if(res.lastUserListId == lastUserListId) {
                 return;
             }
-            const keys = Object.keys(users).filter(key => users[key].online == true);
+            const keys = Object.keys(users).filter(key => users[key].socket);
             const keysAsJson = JSON.stringify(keys);
             ws.send(JSON.stringify({
                 messageType: 'usersOnline',
@@ -205,23 +213,25 @@ wss.on('connection', (ws, req) => {
 
         // If the user wants to refresh the current game state
         if(res.messageType === 'refresh') {
-            // If not in a game, return
-            if(!users[res.username].currentGame) {
+            // If not in a lobby, return
+            if(!users[res.username].lobby) {
+                ws.send(JSON.stringify({
+                    messageType: 'refresh',
+                    inLobby: false
+                }));
                 return;
             }
-            // Send message of updated game to all players in the game
-            ws.send(JSON.stringify({
-                messageType: 'gameUpdate',
-                game: 'Match',
-                gameState: users[res.username].currentGame.getGameState()
-            }));
             return;
         }
 
         // If sent a game invite
         if(res.messageType === 'invite') {
+            // If this player isn't in a lobby
+            if(!users[res.username].lobby) {
+                return;
+            }
             // If the other player isn't online, skip
-            if(!users[res.to] || !users[res.to].online || !users[res.to].socket) {
+            if(!users[res.to] || !users[res.to].socket) {
                 return;
             }
             // Make sure this player is in a match game that wasn't started
@@ -232,7 +242,6 @@ wss.on('connection', (ws, req) => {
             // Otherwise send the request
             users[res.to].socket.send(JSON.stringify({
                 messageType: 'invite',
-                game: 'Match',
                 from: res.username
             }));
             return;
@@ -240,15 +249,15 @@ wss.on('connection', (ws, req) => {
 
         // If joining a game
         if(res.messageType === 'join') {
-            // Make sure player isn't already in a game
-            if(users[res.username].currentGame) {
+            // Make sure invitee isn't already in a lobby
+            if(users[res.username].lobby) {
                 ws.send(JSON.stringify({
                     messageType: 'join',
-                    error: 'You are already in a game.'
+                    error: 'You are already in a lobby.'
                 }));
                 return;
             }
-            // Make sure the other player is valid and in a game
+            // Make sure the inviter is valid
             if(!res.player || !users[res.player]) {
                 ws.send(JSON.stringify({
                     messageType: 'join',
@@ -256,19 +265,18 @@ wss.on('connection', (ws, req) => {
                 }));
                 return;
             }
-            // Make sure the other player is in a game
-            if(!users[res.player].currentGame) {
+            // Make sure the inviter is in a lobby
+            if(!users[res.player].lobby) {
                 ws.send(JSON.stringify({
                     messageType: 'join',
-                    error: 'This player is not in a game.'
+                    error: 'This player is not in a lobby.'
                 }));
                 return;
             }
             // Otherwise try to join the player
             
-            // If Match game
-            let game = users[res.player].currentGame;
-            let errorMessage = game.addPlayer(res.username);
+            let lobby = users[res.player].lobby;
+            let errorMessage = lobby.addPlayer(res.username);
 
             // If error happened
             if(errorMessage) {
@@ -279,100 +287,64 @@ wss.on('connection', (ws, req) => {
                 return;
             }
             // Otherwise return success
-            users[res.username].currentGame = game;
+            users[res.username].lobby = lobby;
             ws.send(JSON.stringify({
                 messageType: 'join',
                 message: `You joined ${res.player}.`
             }));
-            // Send message of updated game to all players in the game
-            let players = game.getPlayers();
-            for (let i = 0; i < players.length; i++) {
-                if(!users[players[i]] || !users[players[i]].socket) {
-                    continue;
-                }
-                users[players[i]].socket.send(JSON.stringify({
-                    messageType: 'gameUpdate',
-                    game: 'Match',
-                    gameState: game.getGameState()
-                }));
-            }
+            // Send message of updated game to all players in the lobby
+            lobby.sendRefresh();
             return;
         }
 
         if(res.messageType === 'kick') {
-            let game = users[res.username].currentGame;
-            // Make sure the user is in a game, they are the
-            // admin, and the other player is in the game
-            if(game && res.username === game.admin &&
-                res.usernameToKick in game.players) {
+            let lobby = users[res.username].lobby;;
+            // Make sure the kicker is in a lobby, they are the
+            // admin, and the other player is in the lobby
+            if(lobby && res.username === lobby.getAdmin() &&
+                lobby.hasPlayer(res.usernameToKick)) {
                 // Remove player
-                const ret = game.removePlayer(res.usernameToKick);
-                users[res.usernameToKick].currentGame = null;
-                // If this was the last player, delete the game
-                if(ret) {
-                    deleteGame(game);
-                }
+                lobby.removePlayer(res.usernameToKick);
+                users[res.usernameToKick].lobby = null;
+                // Send left lobby
                 users[res.usernameToKick].socket.send(JSON.stringify({
                     messageType: 'leaveGame',
-                    message: 'You have been kicked from the game.'
+                    message: 'You have been kicked from the lobby.'
                 }));
+                // Send message of updated game to all players in the lobby
+                lobby.sendRefresh();
             }
             return;
         }
 
         if(res.messageType === 'leaveGame') {
-            let game = users[res.username].currentGame;
-            // Make sure this player is in a game
-            if(game) {
-                const ret = game.removePlayer(res.username);
-                users[res.username].currentGame = null;
-                // If this was the last player, delete the game
-                if(ret) {
-                    deleteGame(game);
-                }
+            let lobby = users[res.username].lobby;
+            // Make sure this player is in a lobby
+            if(lobby) {
+                lobby.removePlayer(res.username);
                 users[res.username].socket.send(JSON.stringify({
                     messageType: 'leaveGame',
-                    message: 'You left the game.'
+                    message: 'You left the lobby.'
                 }));
+                // Send message of updated lobby to all players in the lobby
+                lobby.sendRefresh();
             }
             return;
         }
 
         // If creating a game
         if(res.messageType === 'createGame') {
-            // Make sure player isn't already in a game
-            if(users[res.username].currentGame) {
+            // Make sure player isn't already in a lobby
+            if(users[res.username].lobby) {
                 ws.send(JSON.stringify({
                     messageType: 'createGame',
-                    error: 'You are already in a game.'
+                    error: 'You are already in a lobby.'
                 }));
                 return;
             }
-            // If creating a match game
-            if(res.game === 'Match') {
-                console.log("created Match game");
-                let game = new MatchGame();
-                game.addPlayer(res.username);
-                users[res.username].currentGame = game;
-                games.match.push(game);
-                ws.send(JSON.stringify({
-                    messageType: 'createGame',
-                    game: 'Match'
-                }));
-                // Send message of updated game to all players in the game
-                let players = game.getPlayers();
-                for (let i = 0; i < players.length; i++) {
-                    if(!users[players[i]] || !users[players[i]].socket) {
-                        continue;
-                    }
-                    users[players[i]].socket.send(JSON.stringify({
-                        messageType: 'gameUpdate',
-                        game: 'Match',
-                        gameState: game.getGameState()
-                    }));
-                }
-                return;
-            }
+            let lobby = new Lobby(users);
+            lobby.addPlayer(res.username);
+            lobby.sendRefresh();
         }
 
     });
@@ -380,7 +352,6 @@ wss.on('connection', (ws, req) => {
     ws.on('close', () => {
         // Record the user as offline (if they are registered)
         if(ws.username && ws.username in users) {
-            users[ws.username].online = false;
             users[ws.username].socket = null;
         }
         console.log(`${ws.username} disconnected`);

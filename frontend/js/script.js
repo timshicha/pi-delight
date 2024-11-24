@@ -63,11 +63,13 @@ const wsOnMessage = (event) => {
         }
         else {
             console.log("Logged in.");
-            username = localStorage.getItem("username");
+            username = data.username;
             token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
             // currentPage = 'home';
             currentPage = 'match';
+            // After user has been validated, request a refresh of data
+            requestRefresh();
             updatePage();
         }
     }
@@ -118,9 +120,21 @@ const wsOnMessage = (event) => {
         showInvite(data.from, data.game);
     }
 
-    else if(data.messageType === 'gameUpdate') {
-        let gameState = data.gameState;
-        modifyLobby(gameState.players, 4, username, gameState.admin, kickFunction);
+    else if(data.messageType === 'refresh') {
+        // If in lobby
+        if(data.inLobby) {
+            console.log(username);
+            modifyLobby(data.state.players, data.state.icons, 4, username, kickFunction);
+        }
+        // If not in lobby
+        else {
+            modifyLobby();
+        }
+    }
+
+    else if(data.messageType === 'leaveGame') {
+        console.log(data.message);
+        requestRefresh();
     }
 
     else if(data.messageType === "loggedOut") {
@@ -250,12 +264,15 @@ const requestUpdates = () => {
             token: token,
             lastUserListId: lastUserListId
         }));
-        ws.send(JSON.stringify({
-            messageType: 'refresh',
-            username: username,
-            token: token
-        }));
     }
+}
+
+const requestRefresh = () => {
+    ws.send(JSON.stringify({
+        messageType: 'refresh',
+        username: username,
+        token: token
+    }));
 }
 
 const logout = () => {

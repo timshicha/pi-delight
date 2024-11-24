@@ -18,33 +18,38 @@ export const generateInvitePlayerHtml = (username, invited) => {
 };
 
 // players: [{name: name, gender: gender}], ...]
-export const modifyLobby = (players, maxPlayers, username, admin, kickFunction) => {
+export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction) => {
     const lobbyContainer = document.getElementById("lobbyPlayersContainer");
     const imgs = lobbyContainer.querySelectorAll("img");
     const names = lobbyContainer.querySelectorAll("p");
     const buttons = lobbyContainer.querySelectorAll("button");
+    // If not in a game, reset lobby to default
+    if(!players) {
+        for (let i = 0; i < maxPlayers; i++) {
+            imgs[i].src = '/assets/playerIcons/grayPlayer.png';
+            imgs[i].alt = 'No player icon';
+            names[i].innerText = ' ';
+            buttons[i].classList.add('invisible');
+            buttons[i].onclick = null;
+        }
+        return;
+    }
     // For all players
     for (let i = 0; i < players.length; i++) {
         // Choose correct player icon
-        if(players[i].gender === 'boy' && imgs[i].src !== '/assets/playerIcons/boy.png') {
-            imgs[i].src = '/assets/playerIcons/boy.png';
-            imgs[i].alt = 'Boy player icon';
-        }
-        if(players[i].gender === 'girl' && imgs[i].src !== '/assets/playerIcons/girl.png') {
-            imgs[i].src = '/assets/playerIcons/girl.png';
-            imgs[i].alt = 'Girl player icon';
-        }
+        imgs[i].src = `/assets/playerIcons/${icons[i]}.png`;
+        imgs[i].alt = `Player icon ${icons[i]}`;
         // Set correct name
-        if(players[i].name !== names[i].innerText) {
-            names[i].innerText = players[i].name;
+        if(players[i] !== names[i].innerText) {
+            names[i].innerText = players[i];
         }
-        const kickFunc = () => kickFunction(names[i].innerText);
         // If admin, show kick button
-        if(username === admin) {
+        console.log(username + " " + players[0]);
+        if(username === players[0]) {
             buttons[i].classList.remove('invisible');
             // Looking at admin, lock button to not
             // allow admins to kick themselves
-            if(names[i].innerText === admin) {
+            if(names[i].innerText === players[0]) {
                 buttons[i].classList.add('lockedBtn');
                 buttons[i].onclick = null;
             }
@@ -61,15 +66,13 @@ export const modifyLobby = (players, maxPlayers, username, admin, kickFunction) 
     // For empty slots
     for (let i = players.length; i < maxPlayers; i++) {
         // Set blank image
-        if(imgs[i].src !== '/assets/playerIcons/grayPlayer.png') {
-            imgs[i].src = '/assets/playerIcons/grayPlayer.png';
-            imgs[i].alt = 'No player icon';
-        }
+        imgs[i].src = '/assets/playerIcons/grayPlayer.png';
+        imgs[i].alt = 'No player icon';
         // Set blank name
         if(names[i].innerText !== ' ') {
             names[i].innerText = ' ';
         }
-        if(username === admin) {
+        if(username === players[0]) {
             buttons[i].classList.add('lockedBtn');
             buttons[i].classList.remove('invisible');
             buttons[i].onclick = () => kickFunction(names[i].innerText);
@@ -80,11 +83,3 @@ export const modifyLobby = (players, maxPlayers, username, admin, kickFunction) 
         }
     }
 }
-
-/*
-<div class="lobbyPlayer">
-    <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
-    <p class="lobbyPlayerName">player</p>
-    <button class="promptBtn lobbyKickBtn lockedBtn">Kick</button>
-</div>
-*/
