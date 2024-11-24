@@ -55,17 +55,17 @@
                             <p class="lobbyPlayerName"> </p>
                             <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
                         </div>
-                        <div id="lobbyPlayer0" class="lobbyPlayer">
+                        <div id="lobbyPlayer1" class="lobbyPlayer">
                             <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
                             <p class="lobbyPlayerName"> </p>
                             <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
                         </div>
-                        <div id="lobbyPlayer0" class="lobbyPlayer">
+                        <div id="lobbyPlayer2" class="lobbyPlayer">
                             <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
                             <p class="lobbyPlayerName"> </p>
                             <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
                         </div>
-                        <div id="lobbyPlayer0" class="lobbyPlayer">
+                        <div id="lobbyPlayer3" class="lobbyPlayer">
                             <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
                             <p class="lobbyPlayerName"> </p>
                             <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
@@ -77,11 +77,16 @@
                 <button id="createMatchGameBtn">Create game</button>
                 <button id="leaveMatchGameBtn">Leave game</button>
             </div>
-            <div id="inviteBox" class="inviteBox">
-                <p id="invitePrompt" class="errorMessage"></p>
-                <div class="inviteBtnsBox">
-                    <button id="acceptInviteBtn" class="inviteResponseBtn">Accept</button>
-                    <button id="declineInviteBtn" class="inviteResponseBtn">Decline</button>
+            <div class="promptBoxes">
+                <div id="inviteBox" class="inviteBox">
+                    <p id="invitePrompt" class="errorMessage"></p>
+                    <div class="inviteBtnsBox">
+                        <button id="acceptInviteBtn" class="inviteResponseBtn">Accept</button>
+                        <button id="declineInviteBtn" class="inviteResponseBtn">Decline</button>
+                    </div>
+                </div>
+                <div id="errorBox" class="inviteBox errorBox">
+                    <p id="errorPrompt" class="errorMessage redText margin-y-3px">Error</p>
                 </div>
             </div>
         </div>

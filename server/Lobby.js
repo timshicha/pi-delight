@@ -7,9 +7,18 @@ export class Lobby {
         this.gameSelected = null;
         this.game = null;
         this.chat = [];
+        this.maxPlayers = 4;
     }
 
     addPlayer = (username) => {
+        // If too many players
+        if(this.players.length >= this.maxPlayers) {
+            this.users[username].socket.send(JSON.stringify({
+                messageType: 'join',
+                error: 'The lobby is already full.'
+            }));
+            return;
+        }
         this.players.push(username);
         this.users[username].lobby = this;
         this.updatePlayerIcons();
@@ -60,7 +69,8 @@ export class Lobby {
                     this.users[this.players[i]].socket.send(JSON.stringify({
                         messageType: 'refresh',
                         inLobby: true,
-                        state: this.data()
+                        state: this.data(),
+                        invited: this.users[this.players[i]].invited
                     }));
                 }
             }

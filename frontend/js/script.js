@@ -1,7 +1,7 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
-import { modifyLobby, generateInvitePlayerHtml } from "./lobbyHtml.js";
+import { modifyLobby, modifyInvitePlayersList } from "./lobbyHtml.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -27,6 +27,7 @@ var token;
 // the ID did not change and the list is still the same.
 var lastUserListId = -1;
 var usersOnline = [];
+var invited = [];
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -96,39 +97,29 @@ const wsOnMessage = (event) => {
             document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
         }
         // Otherwise generate HTML for lobby invites
-        let invitePlayersHTML = "";
-        for (let i = 0; i < usersOnline.length; i++) {
-            invitePlayersHTML += generateInvitePlayerHtml(usersOnline[i], false);
-        }
-        document.getElementById("lobbyInvitePlayersDiv").innerHTML = invitePlayersHTML;
-        // For each player, attach a function that sends a request
-        for (let i = 0; i < usersOnline.length; i++) {
-            document.getElementById(`invitePlayerButton${usersOnline[i]}`).addEventListener('click', () => {
-                // Send request
-                ws.send(JSON.stringify({
-                    messageType: 'invite',
-                    username: username,
-                    token: token,
-                    game: 'Match',
-                    to: usersOnline[i]
-                }));
-            });
-        }
+        modifyInvitePlayersList(usersOnline, invited, ws, username, token);
     }
-
     else if(data.messageType === 'invite') {
-        showInvite(data.from, data.game);
+        showInvite(data.from);
     }
 
     else if(data.messageType === 'refresh') {
         // If in lobby
         if(data.inLobby) {
             console.log(username);
+            invited = data.invited;
             modifyLobby(data.state.players, data.state.icons, 4, username, kickFunction);
+            modifyInvitePlayersList(usersOnline, invited, ws, username, token);
         }
         // If not in lobby
         else {
             modifyLobby();
+        }
+    }
+
+    else if(data.messageType === 'join') {
+        if(data.error) {
+            showError(data.error);
         }
     }
 
@@ -169,15 +160,21 @@ const clearShowInviteIntervals = () => {
         clearInterval(inviteBoxIntervalIds[i]);
     }
 }
-const showInvite = (from, game) => {
+const showInvite = (from) => {
     clearShowInviteIntervals();
     console.log("here");
     let inviteBox = document.getElementById("inviteBox");
-    document.getElementById("invitePrompt").innerText = `${from} invited you to play ${game}!`;
+    document.getElementById("invitePrompt").innerText = `${from} invited you.`;
     document.getElementById("acceptInviteBtn").addEventListener('click', () => {
-        acceptInvite(from, game);
+        acceptInvite(from);
+        inviteBox.style.display = 'none';
+        inviteBox.style.opacity = 0;
     });
-    document.getElementById("declineInviteBtn").addEventListener('click', declineInvite);
+    document.getElementById("declineInviteBtn").addEventListener('click', () => {
+        declineInvite
+        inviteBox.style.display = 'none';
+        inviteBox.style.opacity = 0;
+    });
     // Start fading in
     inviteBox.style.opacity = 0;
     inviteBox.style.display = 'block';
@@ -203,6 +200,45 @@ const showInvite = (from, game) => {
             else {
                 opacity -= 0.1;
                 inviteBox.style.opacity = opacity;
+            }
+        }, 50);
+    }
+}
+var errorBoxIntervalIds = [null, null, null];
+const clearShowErrorIntervals = () => {
+    for (let i = 0; i < errorBoxIntervalIds.length; i++) {
+        clearInterval(errorBoxIntervalIds[i]);
+    }
+}
+const showError = (errorMessage) => {
+    clearShowErrorIntervals();
+    let inviteBox = document.getElementById("errorBox");
+    document.getElementById("errorPrompt").innerText = errorMessage;
+    // Start fading in
+    errorBox.style.opacity = 0;
+    errorBox.style.display = 'block';
+    let opacity = 0;
+    errorBoxIntervalIds[0] = setInterval(() => {
+        if(opacity >= 1) {
+            clearInterval(errorBoxIntervalIds[0]);
+            errorBoxIntervalIds[1] = setTimeout(fadeOut, 2000);
+        }
+        else {
+            opacity += 0.1;
+            errorBox.style.opacity = opacity;
+        }
+    }, 50);
+
+    const fadeOut = () => {
+        let opacity = 1;
+        errorBoxIntervalIds[2] = setInterval(() => {
+            if(opacity <= 0) {
+                clearInterval(errorBoxIntervalIds[2]);
+                errorBox.style.display = 'none';
+            }
+            else {
+                opacity -= 0.1;
+                errorBox.style.opacity = opacity;
             }
         }, 50);
     }

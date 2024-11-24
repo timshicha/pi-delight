@@ -7,7 +7,7 @@ import { deleteGame, MatchGame } from './Games.js';
 import { Lobby } from './Lobby.js';
 
 dotenv.config();
-const TEST_USERNAMES = ['Tim', 'Joe', 'Bob', 'Luke'];
+const TEST_USERNAMES = ['Tim', 'Frank', 'Joe', 'Bob', 'Luke'];
 const HOST = process.env.VITE_DEV_SERVER_HOST
 const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +19,7 @@ const wss = new WebSocketServer({
 console.log(`Server running on http://${HOST}:${PORT}`);
 
 // Keep track of users.
-// username: { token, socket, lobby, icon }
+// username: { token, socket, lobby, icon, invited (who this person invited) }
 const users = {};
 
 /*
@@ -76,7 +76,8 @@ wss.on('connection', (ws, req) => {
                     token: '',
                     socket: ws,
                     lobby: null,
-                    icon: 'boy0'
+                    icon: 'boy0',
+                    invited: []
                 };
                 updateUsersOnlineList();
             }
@@ -135,7 +136,8 @@ wss.on('connection', (ws, req) => {
                 token: userUUID,
                 socket: ws,
                 lobby: null,
-                icon: 'boy0'
+                icon: 'boy0',
+                invited: []
             };
             ws.send(JSON.stringify({
                 messageType: 'createUser',
@@ -211,7 +213,7 @@ wss.on('connection', (ws, req) => {
 
         console.log(res);
 
-        // If the user wants to refresh the current game state
+        // If the user wants to refresh the current lobby state
         if(res.messageType === 'refresh') {
             // If not in a lobby, return
             if(!users[res.username].lobby) {
@@ -221,6 +223,7 @@ wss.on('connection', (ws, req) => {
                 }));
                 return;
             }
+            // Otherwise, send lobby state
             return;
         }
 
@@ -234,6 +237,10 @@ wss.on('connection', (ws, req) => {
             if(!users[res.to] || !users[res.to].socket) {
                 return;
             }
+            // If already invited
+            if(users[res.username].invited.includes(res.to)) {
+                return;
+            }
             // Make sure this player is in a match game that wasn't started
             // and that the game isn't full.
             //
@@ -244,6 +251,7 @@ wss.on('connection', (ws, req) => {
                 messageType: 'invite',
                 from: res.username
             }));
+            users[res.username].invited.push(res.to);
             return;
         }
 
@@ -288,6 +296,7 @@ wss.on('connection', (ws, req) => {
             }
             // Otherwise return success
             users[res.username].lobby = lobby;
+            users[res.username].invited = []; // Reset invited list to allow invites to this lobby
             ws.send(JSON.stringify({
                 messageType: 'join',
                 message: `You joined ${res.player}.`
@@ -343,6 +352,7 @@ wss.on('connection', (ws, req) => {
                 return;
             }
             let lobby = new Lobby(users);
+            users[res.username].invited = []; // Reset invited list to allow invites to this lobby
             lobby.addPlayer(res.username);
             lobby.sendRefresh();
         }

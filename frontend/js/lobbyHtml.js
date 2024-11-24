@@ -1,21 +1,89 @@
-// If invited is false, an invite button appears.
-// If invited is true, an invited gray checkmark appears.
-export const generateInvitePlayerHtml = (username, invited) => {
-    if(invited) {
-        return `
-        <div class="userOnline invitePlayerDiv">
-            <p class="userOnlineUsername invitePlayerText">${username}</p>
-            <img src="/assets/checkmarkIcon.png" alt="Invited" class="invitedIcon" />
-        </div>
-        `;
+
+const createInvitePlayer = (username, usersInvited, ws, myUsername, token) => {
+    const element = document.createElement("div");
+    element.classList.add("userOnline");
+    element.classList.add("invitePlayerDiv");
+    const name = document.createElement("p");
+    name.classList.add("userOnlineUsername");
+    name.classList.add("invitePlayerText");
+    name.innerText = username;
+    let invitedImg = document.createElement("img");
+    invitedImg.src = "/assets/checkmarkIcon.png";
+    invitedImg.alt = "Invited";
+    invitedImg.classList.add("invitedIcon");
+    invitedImg.classList.add("invisible");
+    let inviteBtn = document.createElement("input");
+    inviteBtn.id = `invitePlayerButton${username}`;
+    inviteBtn.type = "image";
+    inviteBtn.src = "/assets/plusIcon.png";
+    inviteBtn.alt = "Invite";
+    inviteBtn.classList.add("inviteBtn");
+    inviteBtn.onclick = () => {
+        // Send request
+        ws.send(JSON.stringify({
+            messageType: 'invite',
+            username: myUsername,
+            token: token,
+            to: username
+        }));
+        usersInvited.push(username);
+        inviteBtn.classList.add("invisible");
+        invitedImg.classList.remove("invisible");
     }
-    return `
-    <div class="userOnline invitePlayerDiv">
-        <p class="userOnlineUsername invitePlayerText">${username}</p>
-        <input id="invitePlayerButton${username}" type="image" src="/assets/plusIcon.png" alt="Invite" class="inviteBtn" />
-    </div>
-    `;
+    // If already invited
+    if(usersInvited.includes(username)) {
+        inviteBtn.classList.add("invisible");
+        invitedImg.classList.remove("invisible");
+    }
+    // If not invited
+    else {
+        invitedImg.classList.add("invisible");
+        inviteBtn.classList.remove("invisible");
+    }
+    element.appendChild(name);
+    element.appendChild(invitedImg);
+    element.appendChild(inviteBtn);
+    return element;
 };
+
+const modifyInvitePlayer = (playerElement, setInvited) => {
+    const inviteBtn = playerElement.querySelector("input");
+    const invitedImg = playerElement.querySelector("img");
+    if(setInvited) {
+        inviteBtn.classList.add("invisible");
+        invitedImg.classList.remove("invisible");
+    }
+    else {
+        invitedImg.classList.add("invisible");
+        inviteBtn.classList.remove("invisible");
+    }
+}
+
+export const modifyInvitePlayersList = (playersOnline, usersInvited, ws, username, token) => {
+    const invitePlayersDiv = document.getElementById("lobbyInvitePlayersDiv");
+    const invitePlayer = invitePlayersDiv.children;
+
+    let usersOnline = structuredClone(playersOnline);
+
+    // Go through existing list
+    for (let i = 0; i < invitePlayer.length; i++) {
+        const playerName = invitePlayer[i].querySelector("p").innerText;
+        // If player disconnected
+        if(!usersOnline.includes(playerName)) {
+            invitePlayersDiv.removeChild(invitePlayer[i]);
+        }
+        else {
+            // Modify invite button / invited checkmark
+            modifyInvitePlayer(invitePlayer[i], usersInvited.includes(playerName));
+            usersOnline.splice(usersOnline.indexOf(playerName), 1);
+        }
+    }
+    // For the remaining users online (ones that aren't in the DOM)
+    for (let i = 0; i < usersOnline.length; i++) {
+        let user = createInvitePlayer(usersOnline[i], usersInvited, ws, username, token);
+        invitePlayersDiv.prepend(user);
+    }
+}
 
 // players: [{name: name, gender: gender}], ...]
 export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction) => {
