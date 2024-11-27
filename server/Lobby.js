@@ -55,6 +55,26 @@ export class Lobby {
         this.icons = this.players.map(username => this.users[username].icon);
     }
 
+    sendRefreshTo = (username) => {
+        if(!this.users[username] || !this.users[username].socket) {
+            return;
+        }
+        // If in game
+        if(this.game) {
+        }
+        // If still in lobby
+        else {
+            if(this.users[username].socket) {
+                this.users[username].socket.send(JSON.stringify({
+                    messageType: 'refresh',
+                    inLobby: true,
+                    state: this.data(),
+                    invited: this.users[username].invited
+                }));
+            }
+        }
+    }
+
     sendRefresh = () => {
         // If in game
         if(this.game) {

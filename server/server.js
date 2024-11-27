@@ -10,6 +10,7 @@ dotenv.config();
 const TEST_USERNAMES = ['Tim', 'Frank', 'Joe', 'Bob', 'Luke'];
 const HOST = process.env.VITE_DEV_SERVER_HOST
 const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
+const INVITE_TIMEOUT = process.env.INVITE_TIMEOUT || 20000; // Allow invite to same player every 20 seconds
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -252,6 +253,13 @@ wss.on('connection', (ws, req) => {
                 from: res.username
             }));
             users[res.username].invited.push(res.to);
+            // Allow invite again after 5 seconds
+            setTimeout(() => {
+                users[res.username].invited.splice(users[res.username].invited.indexOf(res.to), 1);
+                if(users[res.username].socket) {
+                    users[res.username].lobby.sendRefreshTo(res.username);
+                }
+            }, INVITE_TIMEOUT);
             return;
         }
 
