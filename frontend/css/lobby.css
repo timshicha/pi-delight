@@ -8,44 +8,7 @@
     height: fit-content;
     user-select: none;
     max-width: 500px;
-}
-
-.invitePlayerDiv {
-    display: relative;
-    text-align: left;
-}
-
-.invitePlayerText {
-    font-size: 18px;
-    padding: 10px;
-    padding-left: 5px;
-    overflow: hidden;
-    max-width: calc(100% - 90px);
-}
-
-.inviteBtn {
-    height: 40px;
-    margin: 7px;
-    background-color: rgb(20, 180, 20);
-    float: right;
-    border-radius: 5px;
-    cursor: pointer;
-    -webkit-user-drag: none;
-}
-.inviteBtn:hover {
-    background-color: rgb(10, 150, 10);
-}
-.inviteBtn:active {
-    background-color: rgb(50, 120, 50);
-}
-
-.invitedIcon {
-    height: 40px;
-    margin: 7px;
-    background-color: rgb(130, 130, 130);
-    float: right;
-    border-radius: 5px;
-    -webkit-user-drag: none;
+    margin-bottom: 50px;
 }
 
 #invitePrompt {
@@ -143,6 +106,67 @@
     opacity: 0.4;
     cursor: pointer;
     pointer-events: none;
+}
+
+.leaveLobbyBtn {
+    margin-bottom: 20px;
+}
+
+.invitePlayerDiv {
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 80%;
+    background-color: rgb(200, 200, 200);
+    border-radius: 10px;
+    height: 40px;
+    padding: 5px;
+    padding-left: 10px;
+}
+
+.invitePlayerUsername {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    margin: 0px;
+    margin-top: 4px;
+    padding: 0px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.invitePlayerStatus {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: rgb(100, 100, 100);
+    margin: 0px;
+    padding-left: 5px;
+    text-align: left;
+}
+
+.inviteBtn {
+    /* display: block; */
+    height: 40px;
+    background-color: rgb(20, 180, 20);
+    float: right;
+    border-radius: 5px;
+    cursor: pointer;
+    -webkit-user-drag: none;
+}
+.inviteBtn:hover {
+    background-color: rgb(10, 150, 10);
+}
+.inviteBtn:active {
+    background-color: rgb(50, 120, 50);
+}
+
+.invitedIcon {
+    height: 40px;
+    background-color: rgb(130, 130, 130);
+    float: right;
+    border-radius: 5px;
+    -webkit-user-drag: none;
 }
 
 .invisible {

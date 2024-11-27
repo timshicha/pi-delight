@@ -53,17 +53,38 @@
 .userOnline {
     background-color: rgb(200, 200, 200);
     border-radius: 10px;
-    padding: 1px;
     margin: 10px auto;
     width: 80%;
+    height: 50px;
+    padding: 0px;
+    padding-bottom: 11px;
 }
 
 .userOnlineUsername {
-    display: inline-block;
+    display: block;
     font-size: 20px;
-    margin: 6px;
+    margin: 0px;
+    margin-top: 3px;
+    padding: 0px;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     color: black;
     user-select: none;
+}
+
+.userStatus {
+    display: block;
+    margin: 0px;
+    margin-top: 0px;
+    padding: 0px;
+    padding-left: 15px;
+    font-size: 11px;
+    height: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: rgb(100, 100, 100);
+}
+
+.inlineBlock {
+    display: inline-block;
+    width: calc(100% - 60px);
 }

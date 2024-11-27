@@ -43,12 +43,50 @@ const lobbies = {};
 var lastUserListId = 0;
 
 // Commonly requested data from clients
-var usersOnline = [];
+// username: {status: "In a lobby",}
+var usersOnline = {};
 var usersOnlineJson = JSON.stringify(usersOnline);
 
-// Update the list of users online
-const updateUsersOnlineList = () => {
-    usersOnline = Object.keys(users).filter(key => users[key].socket);
+const addUserOnline = (username) => {
+    let status;
+    if(!users[username].lobby) {
+        status = " ";
+    }
+    else if(!users[username].lobby.game) {
+        status = "In a lobby";
+    }
+    else {
+        status = "Playing in a game";
+    }
+    usersOnline[username] = {
+        status: status
+    };
+    usersOnlineJson = JSON.stringify(usersOnline);
+    lastUserListId++;
+    console.log("add user online");
+}
+
+const removeUserOnline = (username => {
+    delete usersOnline[username];
+    usersOnlineJson = JSON.stringify(usersOnline);
+    lastUserListId++;
+    console.log("remove user online");
+})
+
+const modifyUserStatus = (username) => {
+    let status;
+    if(!users[username].lobby) {
+        status = "";
+    }
+    else if(!users[username].lobby.game) {
+        status = "in lobby";
+    }
+    else {
+        status = "playing";
+    }
+    usersOnline[username] = {
+        status: status
+    };
     usersOnlineJson = JSON.stringify(usersOnline);
     lastUserListId++;
 }
@@ -80,16 +118,17 @@ wss.on('connection', (ws, req) => {
                     icon: 'boy0',
                     invited: []
                 };
-                updateUsersOnlineList();
+                addUserOnline(res.username);
+                ws.username = res.username;
             }
             else if(!users[res.username].socket) {
                 users[res.username].socket = ws;
-                updateUsersOnlineList();
-                if(users[res.username].lobby) {
-                    users[res.username].lobby.sendRefresh();
-                }
+                // if(users[res.username].lobby) {
+                //     users[res.username].lobby.sendRefresh();
+                // }
+                addUserOnline(res.username);
+                ws.username = res.username;
             }
-            ws.username = res.username;
         }
 
         // If requested to log out
@@ -98,7 +137,7 @@ wss.on('connection', (ws, req) => {
                 users[ws.username].socket = null;
             }
             console.log(`${ws.username} logged out`);
-            updateUsersOnlineList();
+            removeUserOnline(ws.username);
             ws.send(JSON.stringify({
                 messageType: 'logout'
             }));
@@ -145,7 +184,7 @@ wss.on('connection', (ws, req) => {
                 username: res.username,
                 token: userUUID
             }));
-            updateUsersOnlineList();
+            addUserOnline(res.username);
             ws.username = res.username;
             return;
         }
@@ -158,6 +197,7 @@ wss.on('connection', (ws, req) => {
                     messageType: 'validateUser',
                     username: res.username
                 }));
+                addUserOnline(res.username);
                 return;
             }
             // Make sure the username exists and the tokens match
@@ -169,7 +209,7 @@ wss.on('connection', (ws, req) => {
                     messageType: 'validateUser',
                     username: res.username
                 }));
-                updateUsersOnlineList();
+                addUserOnline(res.username);
                 // If in a lobby, send refresh
                 if(users[res.username].lobby) {
                     users[res.username].lobby.sendRefresh();
@@ -202,11 +242,9 @@ wss.on('connection', (ws, req) => {
             if(res.lastUserListId == lastUserListId) {
                 return;
             }
-            const keys = Object.keys(users).filter(key => users[key].socket);
-            const keysAsJson = JSON.stringify(keys);
             ws.send(JSON.stringify({
                 messageType: 'usersOnline',
-                users: keysAsJson,
+                users: usersOnlineJson,
                 lastUserListId: lastUserListId
             }));
             return;
@@ -225,6 +263,7 @@ wss.on('connection', (ws, req) => {
                 return;
             }
             // Otherwise, send lobby state
+            users[res.username].lobby.sendRefreshTo(res.username);
             return;
         }
 
@@ -256,7 +295,8 @@ wss.on('connection', (ws, req) => {
             // Allow invite again after 5 seconds
             setTimeout(() => {
                 users[res.username].invited.splice(users[res.username].invited.indexOf(res.to), 1);
-                if(users[res.username].socket) {
+                // Make sure the user is still connected and in the lobby
+                if(users[res.username].socket && users[res.username].lobby) {
                     users[res.username].lobby.sendRefreshTo(res.username);
                 }
             }, INVITE_TIMEOUT);
@@ -302,13 +342,13 @@ wss.on('connection', (ws, req) => {
                 }));
                 return;
             }
-            // Otherwise return success
             users[res.username].lobby = lobby;
             users[res.username].invited = []; // Reset invited list to allow invites to this lobby
             ws.send(JSON.stringify({
                 messageType: 'join',
                 message: `You joined ${res.player}.`
             }));
+            modifyUserStatus(res.username);
             // Send message of updated game to all players in the lobby
             lobby.sendRefresh();
             return;
@@ -326,8 +366,10 @@ wss.on('connection', (ws, req) => {
                 // Send left lobby
                 users[res.usernameToKick].socket.send(JSON.stringify({
                     messageType: 'leaveGame',
+                    kicked: true,
                     message: 'You have been kicked from the lobby.'
                 }));
+                modifyUserStatus(re.usernameToKick);
                 // Send message of updated game to all players in the lobby
                 lobby.sendRefresh();
             }
@@ -341,8 +383,10 @@ wss.on('connection', (ws, req) => {
                 lobby.removePlayer(res.username);
                 users[res.username].socket.send(JSON.stringify({
                     messageType: 'leaveGame',
+                    kicked: false,
                     message: 'You left the lobby.'
                 }));
+                modifyUserStatus(res.username);
                 // Send message of updated lobby to all players in the lobby
                 lobby.sendRefresh();
             }
@@ -362,6 +406,7 @@ wss.on('connection', (ws, req) => {
             let lobby = new Lobby(users);
             users[res.username].invited = []; // Reset invited list to allow invites to this lobby
             lobby.addPlayer(res.username);
+            modifyUserStatus(res.username);
             lobby.sendRefresh();
         }
 
@@ -373,6 +418,6 @@ wss.on('connection', (ws, req) => {
             users[ws.username].socket = null;
         }
         console.log(`${ws.username} disconnected`);
-        updateUsersOnlineList();
+        removeUserOnline(ws.username);
     });
 });

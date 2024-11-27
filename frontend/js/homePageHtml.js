@@ -1,8 +1,13 @@
 
-export const generateUserHtml = (username) => {
+export const generateUserHtml = (username, status) => {
     return `
-        <div class="userOnline">
-            <p class="userOnlineUsername">${username}</p>
+        <div class="userOnline invitePlayerDiv">
+            <div class="inlineBlock">
+            <p class="invitePlayerText userOnlineUsername">${username}</p>
+            <p class="userStatus">${status}</p>
+            </div>
+            <img src="/assets/checkmarkIcon.png" alt="Invited" class="invitedIcon invisible">
+            <input id="invitePlayerButtonOk" type="image" src="/assets/plusIcon.png" alt="Invite" class="inviteBtn">
         </div>
     `;
 }

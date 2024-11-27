@@ -1,7 +1,7 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
-import { modifyLobby, modifyInvitePlayersList } from "./lobbyHtml.js";
+import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons } from "./lobbyHtml.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -28,6 +28,7 @@ var token;
 var lastUserListId = -1;
 var usersOnline = [];
 var invited = [];
+var inGame = false;
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -39,6 +40,8 @@ const wsOnMessage = (event) => {
         username = null;
         token = null;
         lastUserListId = -1;
+        inGame = false;
+        modifyLobbyButtons(false);
     }
 
     else if(data.messageType === "createUser") {
@@ -52,7 +55,6 @@ const wsOnMessage = (event) => {
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
-            console.log("User created");
             currentPage = 'home';
             updatePage();
         }
@@ -76,22 +78,20 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === "usersOnline") {
-        let usersOnlineTemp = JSON.parse(data.users);
+        usersOnline = JSON.parse(data.users);
         lastUserListId = data.lastUserListId;
         // Remove yourself from the list
-        const index = usersOnlineTemp.indexOf(username);
-        if(index > -1) {
-            usersOnlineTemp.splice(index, 1);
-        }
-        usersOnline = usersOnlineTemp;
+        delete usersOnline[username]; 
+        const usernames = Object.keys(usersOnline);
         let usersOnlineHtml = "";
+        console.log(usersOnline);
 
         // If on home screen, generate HTML for users online.
         if(currentPage === 'home') {
-            for (let i = 0; i < usersOnline.length; i++) {
-                usersOnlineHtml += generateUserHtml(usersOnline[i]);
+            for (let i = 0; i < usernames.length; i++) {
+                usersOnlineHtml += generateUserHtml(usernames[i], usersOnline[usernames[i]].status);
             }
-            if(usersOnline.length === 0) {
+            if(usernames.length === 0) {
                 usersOnlineHtml = generateNoUsersHtml();
             }
             document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
@@ -106,8 +106,8 @@ const wsOnMessage = (event) => {
     else if(data.messageType === 'refresh') {
         // If in lobby
         if(data.inLobby) {
-            console.log(username);
             invited = data.invited;
+            console.log(username);
             modifyLobby(data.state.players, data.state.icons, 4, username, kickFunction);
             modifyInvitePlayersList(usersOnline, invited, ws, username, token);
         }
@@ -124,7 +124,9 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'leaveGame') {
-        console.log(data.message);
+        if(data.kicked) {
+            showError(data.message);
+        }
         requestRefresh();
     }
 
@@ -142,6 +144,7 @@ ws.ws.onopen = () => {
     // Attempt to validate user
     let username = localStorage.getItem("username");
     let token = localStorage.getItem("token");
+    console.log(username);
     if(username) {
         ws.send(JSON.stringify({
             messageType: "validateUser",
@@ -162,7 +165,6 @@ const clearShowInviteIntervals = () => {
 }
 const showInvite = (from) => {
     clearShowInviteIntervals();
-    console.log("here");
     let inviteBox = document.getElementById("inviteBox");
     document.getElementById("invitePrompt").innerText = `${from} invited you.`;
     document.getElementById("acceptInviteBtn").addEventListener('click', () => {
@@ -245,7 +247,6 @@ const showError = (errorMessage) => {
 }
 
 const kickFunction = (usernameToKick) => {
-    console.log('kick');
     ws.send(JSON.stringify({
         messageType: 'kick',
         username: username,
@@ -255,7 +256,6 @@ const kickFunction = (usernameToKick) => {
 }
 
 const acceptInvite = (from, game) => {
-    console.log("accepted");
     ws.send(JSON.stringify({
         messageType: 'join',
         username: username,
@@ -266,7 +266,6 @@ const acceptInvite = (from, game) => {
 }
 
 const declineInvite = () => {
-    console.log("declined");
     clearShowInviteIntervals();
     document.getElementById("inviteBox").style.display = 'none';
 }
@@ -344,7 +343,6 @@ document.getElementById("registerForm").addEventListener('submit', (event) => {
 
 document.getElementById("matchCard").addEventListener('click', () => {
     currentPage = 'match';
-    console.log("match");
     history.pushState(null, null);
     updatePage();
 });

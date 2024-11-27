@@ -49,33 +49,37 @@
             <div id="matchPage" style="display: none;">
                 <div class="lobbyDiv roundedBox purpleBg">
                     <p class="formTitle">Lobby</p>
-                    <div id="lobbyPlayersContainer" class="lobbyPlayersContainer">
-                        <div id="lobbyPlayer0" class="lobbyPlayer">
-                            <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
-                            <p class="lobbyPlayerName"> </p>
-                            <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
+                    <div id="inLobbyBtns" class="lobbyBtnsDiv">
+                        <div id="lobbyPlayersContainer" class="lobbyPlayersContainer">
+                            <div id="lobbyPlayer0" class="lobbyPlayer">
+                                <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
+                                <p class="lobbyPlayerName"> </p>
+                                <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
+                            </div>
+                            <div id="lobbyPlayer1" class="lobbyPlayer">
+                                <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
+                                <p class="lobbyPlayerName"> </p>
+                                <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
+                            </div>
+                            <div id="lobbyPlayer2" class="lobbyPlayer">
+                                <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
+                                <p class="lobbyPlayerName"> </p>
+                                <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
+                            </div>
+                            <div id="lobbyPlayer3" class="lobbyPlayer">
+                                <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
+                                <p class="lobbyPlayerName"> </p>
+                                <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
+                            </div>
                         </div>
-                        <div id="lobbyPlayer1" class="lobbyPlayer">
-                            <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
-                            <p class="lobbyPlayerName"> </p>
-                            <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
-                        </div>
-                        <div id="lobbyPlayer2" class="lobbyPlayer">
-                            <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
-                            <p class="lobbyPlayerName"> </p>
-                            <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
-                        </div>
-                        <div id="lobbyPlayer3" class="lobbyPlayer">
-                            <img src="/assets/playerIcons/grayPlayer.png" alt="No player" class="lobbyPlayerIcon">
-                            <p class="lobbyPlayerName"> </p>
-                            <button class="promptBtn lobbyKickBtn lockedBtn invisible">Kick</button>
-                        </div>
+                        <button id="leaveMatchGameBtn" class="promptBtn leaveLobbyBtn">Leave Lobby</button>
+                        <div id="lobbyInvitePlayersDiv"></div>
+                    </div>
+                    <div id="outOfLobbyBtns" class="lobbyBtnsDiv">
+                        <p class="prompt">You are not in a lobby.</p>
+                        <button id="createMatchGameBtn" class="promptBtn">Create Lobby</button>
                     </div>
                 </div>
-                <div id="lobbyInvitePlayersDiv">
-                </div>
-                <button id="createMatchGameBtn">Create game</button>
-                <button id="leaveMatchGameBtn">Leave game</button>
             </div>
             <div class="promptBoxes">
                 <div id="inviteBox" class="inviteBox">
@@ -89,6 +93,16 @@
                     <p id="errorPrompt" class="errorMessage redText margin-y-3px">Error</p>
                 </div>
             </div>
+
+            <!-- HOW THE INVITE PLAYER ELEMENT LOOKS
+             <div class="invitePlayerDiv">
+                <div class="inlineBlock">
+                <p class="invitePlayerUsername">Timber</p>
+                <p class="invitePlayerStatus">in a lobby</p>
+                </div>
+                <img src="/assets/checkmarkIcon.png" alt="Invited" class="invitedIcon invisible">
+                <input id="invitePlayerButtonOk" type="image" src="/assets/plusIcon.png" alt="Invite" class="inviteBtn">
+            </div> -->
         </div>
     </body>
 </html>

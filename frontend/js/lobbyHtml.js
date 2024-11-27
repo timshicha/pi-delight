@@ -1,12 +1,18 @@
 
-const createInvitePlayer = (username, usersInvited, ws, myUsername, token) => {
+const createInvitePlayer = (username, status, usersInvited, ws, myUsername, token) => {
     const element = document.createElement("div");
-    element.classList.add("userOnline");
     element.classList.add("invitePlayerDiv");
-    const name = document.createElement("p");
-    name.classList.add("userOnlineUsername");
-    name.classList.add("invitePlayerText");
-    name.innerText = username;
+    const nameAndStatusDiv = document.createElement("div");
+    element.appendChild(nameAndStatusDiv);
+    nameAndStatusDiv.classList.add("inlineBlock");
+    const nameElement = document.createElement("p");
+    nameElement.classList.add("invitePlayerUsername");
+    nameElement.innerText = username;
+    const statusElement = document.createElement("p");
+    statusElement.classList.add("invitePlayerStatus");
+    statusElement.innerText = status;
+    nameAndStatusDiv.appendChild(nameElement);
+    nameAndStatusDiv.appendChild(statusElement);
     let invitedImg = document.createElement("img");
     invitedImg.src = "/assets/checkmarkIcon.png";
     invitedImg.alt = "Invited";
@@ -40,13 +46,12 @@ const createInvitePlayer = (username, usersInvited, ws, myUsername, token) => {
         invitedImg.classList.add("invisible");
         inviteBtn.classList.remove("invisible");
     }
-    element.appendChild(name);
     element.appendChild(invitedImg);
     element.appendChild(inviteBtn);
     return element;
 };
 
-const modifyInvitePlayer = (playerElement, setInvited) => {
+const modifyInvitePlayer = (playerElement, status, setInvited) => {
     const inviteBtn = playerElement.querySelector("input");
     const invitedImg = playerElement.querySelector("img");
     if(setInvited) {
@@ -57,30 +62,36 @@ const modifyInvitePlayer = (playerElement, setInvited) => {
         invitedImg.classList.add("invisible");
         inviteBtn.classList.remove("invisible");
     }
+    // Modify status text
+    playerElement.getElementsByClassName("invitePlayerStatus")[0].innerText = status;
 }
 
 export const modifyInvitePlayersList = (playersOnline, usersInvited, ws, username, token) => {
     const invitePlayersDiv = document.getElementById("lobbyInvitePlayersDiv");
     const invitePlayer = invitePlayersDiv.children;
+    console.log("players online: " + Object.keys(playersOnline));
+    console.log("users invited: " + usersInvited);
 
-    let usersOnline = structuredClone(playersOnline);
-
-    // Go through existing list
+    let userKeys = Object.keys(playersOnline);
+    
+    // Go through existing HTML list
     for (let i = 0; i < invitePlayer.length; i++) {
         const playerName = invitePlayer[i].querySelector("p").innerText;
+        console.log(playerName);
         // If player disconnected
-        if(!usersOnline.includes(playerName)) {
+        if(!(userKeys.includes(playerName))) {
             invitePlayersDiv.removeChild(invitePlayer[i]);
+            // delete playersOnline[playerName];
         }
         else {
             // Modify invite button / invited checkmark
-            modifyInvitePlayer(invitePlayer[i], usersInvited.includes(playerName));
-            usersOnline.splice(usersOnline.indexOf(playerName), 1);
+            modifyInvitePlayer(invitePlayer[i], playersOnline[playerName].status, usersInvited.includes(playerName));
         }
+        userKeys.splice(userKeys.indexOf(playerName), 1);
     }
     // For the remaining users online (ones that aren't in the DOM)
-    for (let i = 0; i < usersOnline.length; i++) {
-        let user = createInvitePlayer(usersOnline[i], usersInvited, ws, username, token);
+    for (let i = 0; i < userKeys.length; i++) {
+        let user = createInvitePlayer(userKeys[i], playersOnline[userKeys[i]].status, usersInvited, ws, username, token);
         invitePlayersDiv.prepend(user);
     }
 }
@@ -100,8 +111,10 @@ export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction
             buttons[i].classList.add('invisible');
             buttons[i].onclick = null;
         }
+        modifyLobbyButtons(false);
         return;
     }
+    modifyLobbyButtons(true);
     // For all players
     for (let i = 0; i < players.length; i++) {
         // Choose correct player icon
@@ -149,5 +162,19 @@ export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction
             buttons[i].classList.add('invisible');
             buttons[i].onclick = null;
         }
+    }
+}
+
+// Show proper buttons based on if the player is in a lobby or not
+export const modifyLobbyButtons = (inLobby) => {
+    const inLobbyBtns = document.getElementById("inLobbyBtns");
+    const outOfLobbyBtns = document.getElementById("outOfLobbyBtns");
+    if(inLobby) {
+        outOfLobbyBtns.style.display = 'none';
+        inLobbyBtns.style.display = 'block';
+    }
+    else {
+        inLobbyBtns.style.display = 'none';
+        outOfLobbyBtns.style.display = 'block';
     }
 }
