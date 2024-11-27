@@ -369,7 +369,7 @@ wss.on('connection', (ws, req) => {
                     kicked: true,
                     message: 'You have been kicked from the lobby.'
                 }));
-                modifyUserStatus(re.usernameToKick);
+                modifyUserStatus(res.usernameToKick);
                 // Send message of updated game to all players in the lobby
                 lobby.sendRefresh();
             }
