@@ -51,6 +51,7 @@ const createInvitePlayer = (username, status, usersInvited, ws, myUsername, toke
     return element;
 };
 
+// Update a player invite element
 const modifyInvitePlayer = (playerElement, status, setInvited) => {
     const inviteBtn = playerElement.querySelector("input");
     const invitedImg = playerElement.querySelector("img");
@@ -66,11 +67,10 @@ const modifyInvitePlayer = (playerElement, status, setInvited) => {
     playerElement.getElementsByClassName("invitePlayerStatus")[0].innerText = status;
 }
 
+// Update entire list of invite player elements
 export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLobby, ws, username, token) => {
     const invitePlayersDiv = document.getElementById("lobbyInvitePlayersDiv");
     const invitePlayer = invitePlayersDiv.children;
-    console.log("players online: " + Object.keys(playersOnline));
-    console.log("users invited: " + usersInvited);
 
     let userKeys = Object.keys(playersOnline);
     // Remove players that are in this lobby already
@@ -83,7 +83,7 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
     
     // Go through existing HTML list and remove players that are not in the new list
     for (let i = 0; i < invitePlayer.length; i++) {
-        const playerName = invitePlayer[i].getElementsByClassName("invitePlayerStatus")[0].innerText;
+        const playerName = invitePlayer[i].getElementsByClassName("invitePlayerUsername")[0].innerText;
         // If this player is not in the list, remove them
         if(!userKeys.includes(playerName)) {
             invitePlayersDiv.removeChild(invitePlayer[i]);
