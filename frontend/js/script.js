@@ -29,6 +29,7 @@ var lastUserListId = -1;
 var usersOnline = [];
 var invited = [];
 var inGame = false;
+var playersInLobby = []
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -97,7 +98,7 @@ const wsOnMessage = (event) => {
             document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
         }
         // Otherwise generate HTML for lobby invites
-        modifyInvitePlayersList(usersOnline, invited, ws, username, token);
+        modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
     }
     else if(data.messageType === 'invite') {
         showInvite(data.from);
@@ -108,8 +109,9 @@ const wsOnMessage = (event) => {
         if(data.inLobby) {
             invited = data.invited;
             console.log(username);
-            modifyLobby(data.state.players, data.state.icons, 4, username, kickFunction);
-            modifyInvitePlayersList(usersOnline, invited, ws, username, token);
+            playersInLobby = data.state.players || [];
+            modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
+            modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
         }
         // If not in lobby
         else {

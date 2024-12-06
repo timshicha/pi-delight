@@ -66,28 +66,33 @@ const modifyInvitePlayer = (playerElement, status, setInvited) => {
     playerElement.getElementsByClassName("invitePlayerStatus")[0].innerText = status;
 }
 
-export const modifyInvitePlayersList = (playersOnline, usersInvited, ws, username, token) => {
+export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLobby, ws, username, token) => {
     const invitePlayersDiv = document.getElementById("lobbyInvitePlayersDiv");
     const invitePlayer = invitePlayersDiv.children;
     console.log("players online: " + Object.keys(playersOnline));
     console.log("users invited: " + usersInvited);
 
     let userKeys = Object.keys(playersOnline);
+    // Remove players that are in this lobby already
+    for (let i = 0; i < userKeys.length; i++) {
+        const playerName = userKeys[i];
+        if(playersInLobby.includes(playerName)) {
+            userKeys.splice(userKeys.indexOf(playerName, 1));
+        }
+    }
     
-    // Go through existing HTML list
+    // Go through existing HTML list and remove players that are not in the new list
     for (let i = 0; i < invitePlayer.length; i++) {
-        const playerName = invitePlayer[i].querySelector("p").innerText;
-        console.log(playerName);
-        // If player disconnected
-        if(!(userKeys.includes(playerName))) {
+        const playerName = invitePlayer[i].getElementsByClassName("invitePlayerStatus")[0].innerText;
+        // If this player is not in the list, remove them
+        if(!userKeys.includes(playerName)) {
             invitePlayersDiv.removeChild(invitePlayer[i]);
-            // delete playersOnline[playerName];
         }
+        // Otherwise, modify the user and remove them from userKeys so we don't modify them again
         else {
-            // Modify invite button / invited checkmark
             modifyInvitePlayer(invitePlayer[i], playersOnline[playerName].status, usersInvited.includes(playerName));
+            userKeys.splice(userKeys.indexOf(playerName), 1);
         }
-        userKeys.splice(userKeys.indexOf(playerName), 1);
     }
     // For the remaining users online (ones that aren't in the DOM)
     for (let i = 0; i < userKeys.length; i++) {
