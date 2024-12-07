@@ -73,6 +73,7 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
     const invitePlayer = invitePlayersDiv.children;
 
     let userKeys = Object.keys(playersOnline);
+    console.log("users online:", userKeys);
     // Remove players that are in this lobby already
     for (let i = 0; i < userKeys.length; i++) {
         const playerName = userKeys[i];
@@ -81,8 +82,10 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
         }
     }
     
-    // Go through existing HTML list and remove players that are not in the new list
-    for (let i = 0; i < invitePlayer.length; i++) {
+    // Go through existing HTML list.
+    // Index from the end so that removing elements doesn't mess with indecies we still
+    // have to process.
+    for (let i = invitePlayer.length - 1; i >= 0; i--) {
         const playerName = invitePlayer[i].getElementsByClassName("invitePlayerUsername")[0].innerText;
         // If this player is not in the list, remove them
         if(!userKeys.includes(playerName)) {
@@ -99,6 +102,8 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
         let user = createInvitePlayer(userKeys[i], playersOnline[userKeys[i]].status, usersInvited, ws, username, token);
         invitePlayersDiv.prepend(user);
     }
+
+    console.log(Array(invitePlayer));
 }
 
 // players: [{name: name, gender: gender}], ...]
