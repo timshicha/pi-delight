@@ -89,7 +89,6 @@ const wsOnMessage = (event) => {
         delete usersOnline[username]; 
         const usernames = Object.keys(usersOnline);
         let usersOnlineHtml = "";
-        console.log(usersOnline);
 
         // If on home screen, generate HTML for users online.
         if(currentPage === 'home') {
@@ -113,7 +112,6 @@ const wsOnMessage = (event) => {
         // If in lobby
         if(data.inLobby) {
             invited = data.invited;
-            console.log(username);
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
             modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);

@@ -72,13 +72,13 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
     const invitePlayersDiv = document.getElementById("lobbyInvitePlayersDiv");
     const invitePlayer = invitePlayersDiv.children;
 
+    // Set userkeys[i] to null when user has been accounted for
     let userKeys = Object.keys(playersOnline);
-    console.log("users online:", userKeys);
     // Remove players that are in this lobby already
     for (let i = 0; i < userKeys.length; i++) {
         const playerName = userKeys[i];
         if(playersInLobby.includes(playerName)) {
-            userKeys.splice(userKeys.indexOf(playerName, 1));
+            userKeys[i] = null;
         }
     }
     
@@ -94,16 +94,19 @@ export const modifyInvitePlayersList = (playersOnline, usersInvited, playersInLo
         // Otherwise, modify the user and remove them from userKeys so we don't modify them again
         else {
             modifyInvitePlayer(invitePlayer[i], playersOnline[playerName].status, usersInvited.includes(playerName));
-            userKeys.splice(userKeys.indexOf(playerName), 1);
+            userKeys[userKeys.indexOf(playerName)] = null;
         }
     }
     // For the remaining users online (ones that aren't in the DOM)
     for (let i = 0; i < userKeys.length; i++) {
+        // Skip over users that have been accounted for
+        if(userKeys[i] === null) {
+            continue;
+        }
         let user = createInvitePlayer(userKeys[i], playersOnline[userKeys[i]].status, usersInvited, ws, username, token);
         invitePlayersDiv.prepend(user);
+        userKeys[i] = null;
     }
-
-    console.log(Array(invitePlayer));
 }
 
 // players: [{name: name, gender: gender}], ...]
@@ -135,7 +138,6 @@ export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction
             names[i].innerText = players[i];
         }
         // If admin, show kick button
-        console.log(username + " " + players[0]);
         if(username === players[0]) {
             buttons[i].classList.remove('invisible');
             // Looking at admin, lock button to not
