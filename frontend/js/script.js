@@ -20,6 +20,10 @@ ws.ws.onmessage = (event) => wsOnMessage(event);
 
 var username;
 var token;
+
+// Who the most recent invite is from
+var mostRecentInviteFrom = null;
+
 // Server Update ID's.
 // When a list of something periodically requested (like users online list)
 // changes, the server will change the ID of the list. If the client requests
@@ -29,7 +33,7 @@ var lastUserListId = -1;
 var usersOnline = [];
 var invited = [];
 var inGame = false;
-var playersInLobby = []
+var playersInLobby = [];
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -101,7 +105,8 @@ const wsOnMessage = (event) => {
         modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
     }
     else if(data.messageType === 'invite') {
-        showInvite(data.from);
+        mostRecentInviteFrom = data.from;
+        showInvite();
     }
 
     else if(data.messageType === 'refresh') {
@@ -165,20 +170,22 @@ const clearShowInviteIntervals = () => {
         clearInterval(inviteBoxIntervalIds[i]);
     }
 }
+// Add event listeners for the invite pop-up.
+document.getElementById("acceptInviteBtn").addEventListener('click', () => {
+    acceptInvite();
+    inviteBox.style.display = 'none';
+    inviteBox.style.opacity = 0;
+});
+document.getElementById("declineInviteBtn").addEventListener('click', () => {
+    declineInvite();
+    inviteBox.style.display = 'none';
+    inviteBox.style.opacity = 0;
+});
 const showInvite = (from) => {
     clearShowInviteIntervals();
     let inviteBox = document.getElementById("inviteBox");
-    document.getElementById("invitePrompt").innerText = `${from} invited you.`;
-    document.getElementById("acceptInviteBtn").addEventListener('click', () => {
-        acceptInvite(from);
-        inviteBox.style.display = 'none';
-        inviteBox.style.opacity = 0;
-    });
-    document.getElementById("declineInviteBtn").addEventListener('click', () => {
-        declineInvite
-        inviteBox.style.display = 'none';
-        inviteBox.style.opacity = 0;
-    });
+    document.getElementById("invitePrompt").innerText = `${mostRecentInviteFrom} invited you.`;
+
     // Start fading in
     inviteBox.style.opacity = 0;
     inviteBox.style.display = 'block';
@@ -257,13 +264,12 @@ const kickFunction = (usernameToKick) => {
     }));
 }
 
-const acceptInvite = (from, game) => {
+const acceptInvite = () => {
     ws.send(JSON.stringify({
         messageType: 'join',
         username: username,
         token: token,
-        // game: game,
-        player: from
+        player: mostRecentInviteFrom
     }));
 }
 
