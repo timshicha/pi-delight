@@ -2,6 +2,7 @@ import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons } from "./lobbyHtml.js";
+import { modifyGame } from "./game.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -109,17 +110,21 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'refresh') {
-        // If in lobby
-        if(data.inLobby) {
+        // If not in lobby
+        if(!data.inLobby) {
+            modifyLobby();
+            return;
+        }
+        // If in lobby but not in game
+        if(!data.inGame) {
             invited = data.invited;
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
             modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
+            return;
         }
-        // If not in lobby
-        else {
-            modifyLobby();
-        }
+        // If in game
+        modifyGame(true, data.gameType, data.state, ws, username, token);
     }
 
     else if(data.messageType === 'join') {
@@ -279,7 +284,7 @@ const declineInvite = () => {
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
-    document.getElementById("matchPage").style.display = "none";
+    document.getElementById("lobbyPage").style.display = "none";
     lastUserListId = -1;
 }
 const updatePage = () => {
@@ -288,7 +293,7 @@ const updatePage = () => {
         document.getElementById("registerPage").style.display = "block";
     }
     else if(currentPage === 'match') {
-        document.getElementById("matchPage").style.display = "block";
+        document.getElementById("lobbyPage").style.display = "block";
     }
     else {
         document.getElementById("homePage").style.display = "block";
@@ -367,5 +372,15 @@ document.getElementById("leaveMatchGameBtn").addEventListener('click', () => {
         messageType: 'leaveGame',
         username: username,
         token: token
+    }));
+});
+
+document.getElementById("startGameBtn").addEventListener('click', () => {
+    const game = document.getElementById("gameSelectDropdown").value;
+    ws.send(JSON.stringify({
+        messageType: 'startGame',
+        username: username,
+        token: token,
+        game: game
     }));
 });

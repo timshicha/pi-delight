@@ -1,10 +1,11 @@
+import { MatchGame } from "./Games.js";
 
 export class Lobby {
     constructor (users) {
         this.users = users;
         this.players = [];
         this.icons = [];
-        this.gameSelected = null;
+        this.gameType = null;
         this.game = null;
         this.chat = [];
         this.maxPlayers = 4;
@@ -25,6 +26,10 @@ export class Lobby {
     }
 
     removePlayer = (username) => {
+        // If in game
+        if(this.game) {
+            this.game.removePlayer(username);
+        }
         this.players.splice(this.players.indexOf(username), 1);
         this.users[username].lobby = null;
         this.updatePlayerIcons();
@@ -34,8 +39,8 @@ export class Lobby {
         return {
             players: this.players,
             icons: this.icons,
-            gameSelected: this.gameSelected,
-            game: this.game,
+            gameType: this.gameType,
+            game: this.game ? this.game.getVisibleState() : null,
             chat: this.chat
         };
     }
@@ -55,45 +60,38 @@ export class Lobby {
         this.icons = this.players.map(username => this.users[username].icon);
     }
 
+    startGame = () => {
+        console.log(this.players);
+        console.log("starting game");
+        this.game = new MatchGame(this.players);
+        this.sendRefresh();
+    }
+
+    makeMove = (username, moveInfo) => {
+        const ret = this.game.makeMove(username, moveInfo);
+        if(ret) {
+            this.sendRefresh();
+        }
+    }
+
     sendRefreshTo = (username) => {
         if(!this.users[username] || !this.users[username].socket) {
             return;
         }
-        // If in game
-        if(this.game) {
-        }
-        // If still in lobby
-        else {
-            if(this.users[username].socket) {
-                this.users[username].socket.send(JSON.stringify({
-                    messageType: 'refresh',
-                    inLobby: true,
-                    state: this.data(),
-                    invited: this.users[username].invited
-                }));
-            }
-        }
+        const gameType = this.game ? this.game.gameType : null;
+        this.users[username].socket.send(JSON.stringify({
+            messageType: 'refresh',
+            inLobby: true,
+            inGame: Boolean(this.game),
+            gameType: gameType,
+            state: this.data(),
+            invited: this.users[username].invited
+        }));
     }
 
     sendRefresh = () => {
-        // If in game
-        if(this.game) {
-            for (let i = 0; i < this.players.length; i++) {
-
-            }
-        }
-        // If still in lobby
-        else {
-            for (let i = 0; i < this.players.length; i++) {
-                if(this.users[this.players[i]].socket) {
-                    this.users[this.players[i]].socket.send(JSON.stringify({
-                        messageType: 'refresh',
-                        inLobby: true,
-                        state: this.data(),
-                        invited: this.users[this.players[i]].invited
-                    }));
-                }
-            }
+        for (let i = 0; i < this.players.length; i++) {
+            this.sendRefreshTo(this.players[i]);
         }
     }
 }

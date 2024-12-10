@@ -118,6 +118,9 @@
 }
 
 #gameSelectDropdown {
+    width: 200px;
+    text-align: center;
+    border-width: 10px;
 }
 
 .invitePlayerDiv {

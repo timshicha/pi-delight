@@ -1,0 +1,31 @@
+
+#matchDiv {
+}
+
+.matchContainer {
+    display: flex;
+    width: 95vw;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: auto;
+    justify-content: start;
+}
+
+.matchCard {
+    flex: 20%;
+    min-height: 50px;
+    background-color: gray;
+    border: black 2px solid;
+    margin: 1%;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.matchCardFlipped {
+    background-color: white;
+}
+
+.matchImg {
+    -webkit-user-drag: none;
+    user-select: none;
+}

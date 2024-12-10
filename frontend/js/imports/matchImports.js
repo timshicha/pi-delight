@@ -6,6 +6,7 @@ export const matchImagePaths = [
 'ark.png',
 'blueRose.png',
 'bowAndArrow.png',
+'brocoliFace.png',
 'cat.png',
 'cellTower.png',
 'cone.png',
@@ -15,11 +16,10 @@ export const matchImagePaths = [
 'jupiterRock.png',
 'lock.png',
 'shorts.png',
-'snowboard.png',
+'snowboarder.png',
 'soccerBall.png',
 'syringe.png',
 'ufo.png',
-'veggieFace.png',
 'wheelbarrow.png'
 ];
 

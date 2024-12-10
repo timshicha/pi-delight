@@ -10,54 +10,46 @@ const shuffleArray = (array) => {
   return array;
 }
 
-const ROWS = 6;
-const COLUMNS = 4;
+const MATCH_SETS = 8; // How many sets of cards there are
 const MATCH_CARDS = 20; // How many different match cards the FE has
 
 export class MatchGame {
-    constructor () {
+    constructor (players) {
+        if(players.length < 1) return; // Minimum of 1 players
+        if(players.length > 4) return; // Maxinum of 4 players
+        this.gameType = "Match";
         this.admin = null;
         this.players = {}; // username: {matches: 0, gender: 'boy'}
         this.playerOrder = [];
         this.currentTurnIndex = null;
-        this.gameState = "Waiting"; // Waiting, Active, or Finished
+        this.gameActive = true;
         this.turnExpires = null;
         this.board = null;
         this.cardsLeft = null;
+        this.visibleBoard = null;
         this.playerCount = 0;
-        this.cardNumber = 0; //If it's the 0th, 1st, or 2nd card chosen on a turn
-        this.flippedCards = [-1, -1, -1];
-    }
+        this.firstCardChosen = false;
+        this.firstCardIndex = -1;
+        this.secondCardIndex = -1;
 
-    // Add a player to the game
-    addPlayer = (username) => {
-        // If they're already in the game
-        if(username in this.players) {
-            return "You are already in the game.";
+        // Add each player
+        for (let i = 0; i < players.length; i++) {
+            const username = players[i];
+            if(username in this.players) continue; // Don't add duplicates
+            this.players[username] = {
+                matches: 0,
+                gender: 'boy'
+            };
         }
-        if(this.playerCount >= 4) {
-            return "The game is full.";
-        }
-        // If the game is already started
-        if(this.gameState === 'Active') {
-            return "This game is already in progress.";
-        }
-        // If this is the first player, they're the admin
-        if(this.playerCount === 0) {
-            this.admin = username;
-        }
-        this.players[username] = {
-            matches: 0,
-            gender: 'boy'
-        };
-        // Add them to the turn list
-        this.playerOrder.push(username);
-        this.playerCount++;
-        return null;
+        this.admin = players[0];
+        this.playerOrder = players;
+        this.playerCount = players.length;
+        this.startGame();
+        console.log("game started");
     }
 
     nextTurn = () => {
-        if(this.gameState !== 'Active') {
+        if(!this.gameActive) {
             return;
         }
         this.currentTurnIndex++;
@@ -66,8 +58,26 @@ export class MatchGame {
         }
     }
 
+    updateVisibleBoard = () => {
+        // Show the board as it should be seen by users
+        for (let i = 0; i < this.visibleBoard.length; i++) {
+            // If this card was taken
+            if(!this.cardsLeft[i]) {
+                this.visibleBoard[i] = null;
+            }
+            // If this card is visible
+            else if(this.firstCardIndex == i || this.secondCardIndex == i) {
+                this.visibleBoard[i] = this.board[i];
+            }
+            // If not visible
+            else {
+                this.visibleBoard[i] = -1;
+            }
+        }
+    }
+
     getTurnUsername = () => {
-        if(this.gameState !== 'Active') {
+        if(!this.gameActive) {
             return null;
         }
         return this.playerOrder[this.currentTurnIndex];
@@ -118,9 +128,20 @@ export class MatchGame {
         return this.playerCount >= 4;
     }
 
+    // Wrap the makeTurn call for safety
+    makeMove = (username, moveInfo) => {
+        console.log(this.board);
+        // Make sure it's their turn
+        if(this.getTurnUsername() !== username) {
+            return;
+        }
+        const index = moveInfo.index; //parseInt(moveInfo.index) || 0;
+        return this.makeTurn(username, index);
+    }
+
     // Player move
     makeTurn = (username, cardChosen) => {
-        if(this.gameState !== 'Active') {
+        if(!this.gameActive) {
             return false;
         }
         // If not user's turn
@@ -136,95 +157,74 @@ export class MatchGame {
             return false;
         }
         // Make sure they didn't select this card already on this turn
-        if(cardChosen in this.flippedCards) {
+        if(this.firstCardChosen && this.firstCardIndex === cardChosen) {
             return false;
         }
-        // Otherwise flip the card
-        // If this is the first card, simply return it
-        if(this.cardNumber == 0) {
-            this.flippedCards[0] = cardChosen;
-            this.cardNumber++;
-            return {
-                cardIndex: cardChosen,
-                cardReveal: this.board[cardChosen],
-            };
+        // If first card
+        if(!this.firstCardChosen) {
+            this.firstCardIndex = cardChosen;
+            this.secondCardIndex = -1;
         }
-        // If this is the second card
-        if(this.cardNumber == 1) {
-            // If it's a match to first card]
-            if(this.board[this.flippedCards[0]] == this.board[cardChosen]) {
-                this.flippedCards[1] = cardChosen;
-                this.cardNumber++;
-                return {
-                    cardIndex: cardChosen,
-                    cardReveal: this.board[cardChosen]
-                };
+        // If second card
+        else {
+            this.secondCardIndex = cardChosen;
+        }
+        let visible = this.getCurrentVisibleCards();
+        // If second card, check for match
+        if(this.firstCardChosen) {
+            // If a match
+            if(this.board[this.firstCardIndex] === this.board[this.secondCardIndex]) {
+                this.cardsLeft[this.firstCardIndex] = 0;
+                this.cardsLeft[this.secondCardIndex] = 0;
+                this.players[username].matches++;
             }
-            // If it's not a match
-            this.flippedCards = [-1, -1, -1];
-            this.cardNumber = 0;
-            this.nextTurn();
-            return {
-                cardIndex: cardChosen,
-                cardReveal: this.board[cardChosen]
-            };
-        }
-        // If this is the third card (last card)
-        if(this.cardNumber == 2) {
-            // If it's also a match
-            if(this.board[this.flippedCards[0]] == this.board[cardChosen]) {
-                this.flippedCards[2] = cardChosen;
-                this.cardNumber++;
-                // Record the match
-                this.players[this.getTurnUsername()].matches++;
-                this.cardsLeft[this.flippedCards[0]] = 0;
-                this.cardsLeft[this.flippedCards[1]] = 0;
-                this.cardsLeft[this.flippedCards[2]] = 0;
-                
-                this.flippedCards = [-1, -1, -1];
-                this.cardNumber = 0;
-                return {
-                    cardIndex: cardChosen,
-                    cardReveal: this.board[cardChosen]
-                };
+            else {
+                this.nextTurn();
             }
-            // If it's not a match
-            this.flippedCards = [-1, -1, -1];
-            this.cardNumber = 0;
-            this.nextTurn();
-            return {
-                cardIndex: cardChosen,
-                cardReveal: this.board[cardChosen]
-            };
+            this.firstCardChosen = false;
         }
-        return null;
+        else {
+            this.firstCardChosen = true;
+        }
+        this.updateVisibleBoard();
+        return true;
     }
 
     startGame = () => {
-        if(this.gameState !== 'Waiting'){
-            return false;
-        }
-        this.gameState = 'Active';
         this.cardNumber = 0;
         // Randomize turn
         this.currentTurnIndex = randInt(0, this.playerCount - 1);
-        // Make the board
-        this.board = Array(20).fill(0);
-        this.cardsLeft = Array(20).fill(1);
         // We have 20 cards to choose from to make the 8 sets
-        // Choose 8 different numbers between 0 and 19 (they will be in first 8 indeces)
+        // Choose SETS different numbers between 0 and 19 (they will be in first SETS indeces)
         let cardOptions = Array.from({ length: MATCH_CARDS }, (_, i) => i);
         cardOptions = shuffleArray(cardOptions);
-        // Now place them in sets of 3 in an array
-        this.board = Array(MATCH_CARDS).fill(-1);
-        for (let option = 0; option <= ROWS * COLUMNS / 3; option++) {
-            this.board[option * 3] = cardOptions[option];
-            this.board[option * 3 + 1] = cardOptions[option];
-            this.board[option * 3 + 2] = cardOptions[option];
+        // Make the board
+        this.board = Array(MATCH_SETS * 2).fill(-1);
+        this.cardsLeft = Array(MATCH_SETS * 2).fill(1);
+        this.visibleBoard = Array(MATCH_SETS * 2).fill(-1);
+        // Now place them in sets of 2 in an array
+        for (let option = 0; option < MATCH_SETS; option++) {
+            this.board[option * 2] = cardOptions[option];
+            this.board[option * 2 + 1] = cardOptions[option];
         }
         // Now shuffle the array
         this.board = shuffleArray(this.board);
+        console.log(this.board);
         return true;
+    }
+
+    // What current cards are visible
+    getCurrentVisibleCards = () => {
+        let visible = {};
+        visible[this.firstCardIndex] = this.board[this.firstCardIndex];
+        visible[this.secondCardIndex] = this.board[this.secondCardIndex];
+        return visible;
+    }
+
+    getVisibleState = () => {
+        return {
+            visibleBoard: this.visibleBoard
+        };
     }
 
     getGameState = () => {
@@ -240,7 +240,7 @@ export class MatchGame {
         }
         return {
             players: players,
-            gameState: this.gameState,
+            gameActive: this.gameActive,
             cardsLeft: this.cardsLeft,
             admin: this.admin
         };

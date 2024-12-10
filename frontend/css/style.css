@@ -15,7 +15,7 @@
 
 .promptBtn {
     background-color: black;
-    border: none;
+    border: black solid;
     border-radius: 10px;
     height: 40px;
     padding-left: 30px;
@@ -28,6 +28,7 @@
 }
 .promptBtn:hover {
     background-color: rgb(50, 50, 50);
+    border-color: rgb(50, 50, 50);
     cursor: pointer;
 }
 

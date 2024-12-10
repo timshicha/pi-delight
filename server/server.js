@@ -408,8 +408,39 @@ wss.on('connection', (ws, req) => {
             lobby.addPlayer(res.username);
             modifyUserStatus(res.username);
             lobby.sendRefresh();
+            return;
         }
 
+        // If starting a game
+        if(res.messageType === 'startGame') {
+            const lobby = users[res.username].lobby;
+            // Make sure player is in a lobby and is admin
+            if(!lobby || res.username !== lobby.getAdmin()) {
+                return;
+            }
+            // Make sure the game isn't started
+            if(lobby.game) {
+                return;
+            }
+            // Start the game
+            lobby.startGame();
+            return;
+        }
+
+        // If a move in a game
+        if(res.messageType === 'gameMove') {
+            // Make sure the player is in a lobby and game
+            if(!users[res.username].lobby || !users[res.username].lobby.game) {
+                return;
+            }
+            // Make sure moveInfo was supplied
+            if(!res.moveInfo) {
+                return;
+            }
+            // Otherwise, make the move
+            users[res.username].lobby.makeMove(res.username, res.moveInfo);
+            // Let others know the move result
+        }
     });
 
     ws.on('close', () => {
