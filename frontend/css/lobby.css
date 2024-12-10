@@ -112,6 +112,14 @@
     margin-bottom: 20px;
 }
 
+.startGameDiv {
+    /* Only display this to the admin using JS */
+    display: none;
+}
+
+#gameSelectDropdown {
+}
+
 .invitePlayerDiv {
     display: block;
     margin: auto;

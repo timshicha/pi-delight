@@ -175,6 +175,14 @@ export const modifyLobby = (players, icons, maxPlayers=4, username, kickFunction
             buttons[i].onclick = null;
         }
     }
+    // If admin, allow game selection and start game button
+    const startGameDiv = document.getElementById("startGameDiv");
+    if(username === players[0]) {
+        startGameDiv.style.display = 'block';
+    }
+    else {
+        startGameDiv.style.display = 'none';
+    }
 }
 
 // Show proper buttons based on if the player is in a lobby or not
