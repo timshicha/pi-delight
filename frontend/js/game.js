@@ -13,3 +13,12 @@ export const modifyGame = (inGame, gameType, state, ws, username, token) => {
         modifyMatchGame(state, ws, username, token);
     }
 }
+
+// Clear game: removes the game screen
+export const clearGame = () => {
+    // Remove all games
+    document.getElementById("matchContainer").style.display = 'none';
+
+    // Remove game div
+    document.getElementById("gamePage").style.display = 'none';
+}

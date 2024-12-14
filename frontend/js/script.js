@@ -2,7 +2,7 @@ import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons } from "./lobbyHtml.js";
-import { modifyGame } from "./game.js";
+import { clearGame, modifyGame } from "./game.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -138,6 +138,7 @@ const wsOnMessage = (event) => {
             showError(data.message);
         }
         requestRefresh();
+        clearGame();
     }
 
     else if(data.messageType === "loggedOut") {

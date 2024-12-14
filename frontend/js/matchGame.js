@@ -9,8 +9,10 @@ const roundUpToNearest = (number, roundTo) => {
 }
 
 export const modifyMatchGame = (state, ws, username, token) => {
+    console.log("modifyMatchGame:", state);
     // Make sure the right number of cards is displayed
     const matchContainer = document.getElementById("matchContainer");
+    matchContainer.style.display = 'flex';
     // If we need to change the number of cards in the DOM
     const existingCardElementCount = matchContainer.children.length;
     const cardCount = state.game.visibleBoard.length;
@@ -52,7 +54,7 @@ export const modifyMatchGame = (state, ws, username, token) => {
         }
         // Otherwise do some action
         else {
-            cardElement.style.visibility = "show";
+            cardElement.style.visibility = "visible";
             cardElement.onclick = () => {
                 ws.send(JSON.stringify({
                     messageType: "gameMove",
