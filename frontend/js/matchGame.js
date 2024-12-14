@@ -79,4 +79,18 @@ export const modifyMatchGame = (state, ws, username, token) => {
             }
         }
     }
+    
+    // Tell player it's their turn
+    const matchPrompt = document.getElementById("matchPrompt");
+    if(state.game.currentTurn === username) {
+        matchPrompt.innerText = "Your turn";
+    }
+    else {
+        matchPrompt.innerText = "";
+    }
+
+    // If game is over
+    if(state.game.gameIsOver) {
+        matchPrompt.innerText = JSON.stringify(state.game.players);
+    }
 }

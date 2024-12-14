@@ -10,7 +10,7 @@ const shuffleArray = (array) => {
   return array;
 }
 
-const MATCH_SETS = 3; // How many sets of cards there are
+const MATCH_SETS = 10; // How many sets of cards there are
 const MATCH_CARDS = 20; // How many different match cards the FE has
 
 export class MatchGame {
@@ -22,7 +22,6 @@ export class MatchGame {
         this.players = {}; // username: {matches: 0, gender: 'boy'}
         this.playerOrder = [];
         this.currentTurnIndex = null;
-        this.gameActive = true;
         this.turnExpires = null;
         this.board = null;
         this.cardsLeft = null;
@@ -31,6 +30,7 @@ export class MatchGame {
         this.firstCardChosen = false;
         this.firstCardIndex = -1;
         this.secondCardIndex = -1;
+        this.gameIsOver = false;
 
         // Add each player
         for (let i = 0; i < players.length; i++) {
@@ -49,7 +49,7 @@ export class MatchGame {
     }
 
     nextTurn = () => {
-        if(!this.gameActive) {
+        if(this.gameIsOver) {
             return;
         }
         this.currentTurnIndex++;
@@ -77,7 +77,7 @@ export class MatchGame {
     }
 
     getTurnUsername = () => {
-        if(!this.gameActive) {
+        if(this.gameIsOver) {
             return null;
         }
         return this.playerOrder[this.currentTurnIndex];
@@ -141,7 +141,7 @@ export class MatchGame {
 
     // Player move
     makeTurn = (username, cardChosen) => {
-        if(!this.gameActive) {
+        if(this.gameIsOver) {
             return false;
         }
         // If not user's turn
@@ -169,7 +169,6 @@ export class MatchGame {
         else {
             this.secondCardIndex = cardChosen;
         }
-        let visible = this.getCurrentVisibleCards();
         // If second card, check for match
         if(this.firstCardChosen) {
             // If a match
@@ -187,14 +186,27 @@ export class MatchGame {
             this.firstCardChosen = true;
         }
         this.updateVisibleBoard();
+        // If game is over
+        this.checkGameOver();
         return true;
+    }
+
+    // See if game is over (update self.gameIsOver)
+    checkGameOver = () => {
+        // See if any cards are left
+        for (let i = 0; i < this.cardsLeft.length; i++) {
+            if(this.cardsLeft[i]) {
+                return;
+            }
+        }
+        this.gameIsOver = true;
     }
 
     startGame = () => {
         this.cardNumber = 0;
         // Randomize turn
         this.currentTurnIndex = randInt(0, this.playerCount - 1);
-        // We have 20 cards to choose from to make the 8 sets
+        // We have 20 cards to choose from to make the sets
         // Choose SETS different numbers between 0 and 19 (they will be in first SETS indeces)
         let cardOptions = Array.from({ length: MATCH_CARDS }, (_, i) => i);
         cardOptions = shuffleArray(cardOptions);
@@ -222,12 +234,6 @@ export class MatchGame {
     }
 
     getVisibleState = () => {
-        return {
-            visibleBoard: this.visibleBoard
-        };
-    }
-
-    getGameState = () => {
         let players = [];
         // For each player
         let usernames = Object.keys(this.players);
@@ -240,12 +246,12 @@ export class MatchGame {
         }
         return {
             players: players,
-            gameActive: this.gameActive,
-            cardsLeft: this.cardsLeft,
-            admin: this.admin
+            admin: this.admin,
+            visibleBoard: this.visibleBoard,
+            currentTurn: this.gameIsOver ? null: this.getTurnUsername(),
+            gameIsOver: this.gameIsOver
         };
     }
-    
 }
 
 // Delete a game from dict of game lists.

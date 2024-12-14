@@ -68,6 +68,9 @@ export class Lobby {
     }
 
     makeMove = (username, moveInfo) => {
+        if(!this.game) {
+            return;
+        }
         const ret = this.game.makeMove(username, moveInfo);
         if(ret) {
             this.sendRefresh();
