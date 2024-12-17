@@ -2,3 +2,45 @@
 .gamePage {
     display: none;
 }
+
+.gameResultDiv {
+    position: absolute;
+    background-color: rgb(205, 205, 205);
+    top: 30%;
+    left: calc(50% - 250px);
+    width: 90%;
+    max-width: 500px;
+    height: fit-content;
+    text-align: center;
+    padding: 20px;
+}
+
+.playerResultDiv {
+    display: flex;
+    background-color: gray;
+    margin-top: 10px;
+    padding: 5px;
+}
+.playerResultDiv:first-child {
+    margin-top: 20px;
+}
+.playerResultNumber {
+    flex: 7%;
+    justify-self: start;
+    text-align: right;
+}
+.playerResultUsername {
+    flex: 70%;
+    text-align: left;
+    margin-left: 35px;
+    font-size: 25px;
+    margin-top: 3px;
+}
+.playerResultScore {
+    flex: 20%;
+    text-align: right;
+    margin-right: 20px;
+}
+.yellowBg {
+    background-color: rgb(177, 177, 0);
+}

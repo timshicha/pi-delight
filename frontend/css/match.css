@@ -1,10 +1,12 @@
 
 #matchDiv {
+    width: 95%;
+    margin: auto;
+    max-width: 500px;
 }
 
 .matchContainer {
     display: flex;
-    width: 95vw;
     flex-direction: row;
     flex-wrap: wrap;
     margin: auto;
