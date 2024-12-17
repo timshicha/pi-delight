@@ -418,8 +418,8 @@ wss.on('connection', (ws, req) => {
             if(!lobby || res.username !== lobby.getAdmin()) {
                 return;
             }
-            // Make sure the game isn't started
-            if(lobby.game) {
+            // If there's an active game
+            if(lobby.game && lobby.game.isActive()) {
                 return;
             }
             // Start the game

@@ -1,3 +1,6 @@
+const MATCH_SETS = 2; // How many sets of cards there are
+const MATCH_CARDS = 20; // How many different match cards the FE has
+
 const randInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -9,9 +12,6 @@ const shuffleArray = (array) => {
   }
   return array;
 }
-
-const MATCH_SETS = 10; // How many sets of cards there are
-const MATCH_CARDS = 20; // How many different match cards the FE has
 
 export class MatchGame {
     constructor (players) {
@@ -251,6 +251,10 @@ export class MatchGame {
             currentTurn: this.gameIsOver ? null: this.getTurnUsername(),
             gameIsOver: this.gameIsOver
         };
+    }
+
+    isActive = () => {
+        return !this.gameIsOver;
     }
 }
 
