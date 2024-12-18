@@ -51,7 +51,7 @@ export const showResults = (username, data, sort = true) => {
     }
 
     if(sort) {
-        data.sort((player) => -player.score, );
+        data.sort((a, b) => (b.score - a.score));
     }
 
     // Clear children
