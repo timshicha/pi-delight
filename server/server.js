@@ -350,7 +350,7 @@ wss.on('connection', (ws, req) => {
             }));
             modifyUserStatus(res.username);
             // Send message of updated game to all players in the lobby
-            lobby.sendRefresh();
+            lobby.sendRefresh(false);
             return;
         }
 
@@ -371,7 +371,7 @@ wss.on('connection', (ws, req) => {
                 }));
                 modifyUserStatus(res.usernameToKick);
                 // Send message of updated game to all players in the lobby
-                lobby.sendRefresh();
+                lobby.sendRefresh(false);
             }
             return;
         }
@@ -388,7 +388,7 @@ wss.on('connection', (ws, req) => {
                 }));
                 modifyUserStatus(res.username);
                 // Send message of updated lobby to all players in the lobby
-                lobby.sendRefresh();
+                lobby.sendRefresh(false);
             }
             return;
         }

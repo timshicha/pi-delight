@@ -43,6 +43,7 @@ const createPlayerResultDiv = (number, username, score) => {
 // Show the screen with results (scored, rankings, etc)
 // sort: auto-sort the players by score
 export const showResults = (username, data, sort = true) => {
+    console.log("show results");
     const gameResultsDiv = document.getElementById("gameResultsDiv");
     // If no data, just make results div visible (old data)
     if(!data) {
@@ -58,7 +59,6 @@ export const showResults = (username, data, sort = true) => {
     playerResultContainer.replaceChildren();
     // For each player, show their score
     for (let i = 0; i < data.length; i++) {
-        console.log(data);
         const playerResultDiv = createPlayerResultDiv(i + 1, data[i].username, data[i].score);
         if(username === data[i].username) {
             playerResultDiv.classList.add("yellowBg");
@@ -71,6 +71,7 @@ export const showResults = (username, data, sort = true) => {
 
 // Close the results window and send user back to lobby
 export const closeResults = () => {
+    console.log("close results");
     document.getElementById("gameResultsDiv").style.display = 'none';
 }
 document.getElementById("closeResultsBtn").onclick = () => {

@@ -1,4 +1,4 @@
-const MATCH_SETS = 2; // How many sets of cards there are
+const MATCH_SETS = 1; // How many sets of cards there are
 const MATCH_CARDS = 20; // How many different match cards the FE has
 
 const randInt = (min, max) => {

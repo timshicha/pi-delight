@@ -73,11 +73,15 @@ export class Lobby {
         }
         const ret = this.game.makeMove(username, moveInfo);
         if(ret) {
-            this.sendRefresh();
+            // If the game is now over and we are sending the last
+            // refresh, tell the client to not teleport the player
+            // back to lobby on this refresh
+            const backToLobby = this.game && !this.game.gameIsOver;
+            this.sendRefresh(backToLobby);
         }
     }
 
-    sendRefreshTo = (username) => {
+    sendRefreshTo = (username, backToLobby=true) => {
         if(!this.users[username] || !this.users[username].socket) {
             return;
         }
@@ -88,7 +92,8 @@ export class Lobby {
             inGame: Boolean(this.game),
             gameType: gameType,
             state: this.data(),
-            invited: this.users[username].invited
+            invited: this.users[username].invited,
+            backToLobby: backToLobby
         }));
         // If game is over, send game over
         if(this.game && this.game.gameIsOver) {
@@ -100,9 +105,14 @@ export class Lobby {
         }
     }
 
-    sendRefresh = () => {
+    // backToLobby: let the client know if the player should be
+    // forced back to lobby. If this is true, the player's results
+    // window will close and they will be teleported t lobby. This
+    // should be set to false if sendRefresh is triggered by someone
+    // simply leaving or joining the lobby.
+    sendRefresh = (backToLobby=true) => {
         for (let i = 0; i < this.players.length; i++) {
-            this.sendRefreshTo(this.players[i]);
+            this.sendRefreshTo(this.players[i], backToLobby);
         }
         // If game is over, reset the game after refresh
         if(this.game && this.game.gameIsOver) {

@@ -18,9 +18,6 @@ export const modifyMatchGame = (state, ws, username, token) => {
     const existingCardElementCount = matchContainer.children.length;
     const cardCount = state.game.visibleBoard.length;
     const expectedCardElementCount = roundUpToNearest(cardCount, 4);
-    console.log(state);
-    console.log("html children: ", existingCardElementCount);
-    console.log("should be: ", expectedCardElementCount);
 
     // If there are too few cards in the DOM
     if(existingCardElementCount < expectedCardElementCount) {

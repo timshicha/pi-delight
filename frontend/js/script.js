@@ -2,7 +2,7 @@ import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobbyHtml.js";
-import { clearGame, closeResults, modifyGame } from "./game.js";
+import { clearGame, closeResults, modifyGame, showResults } from "./game.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -110,25 +110,28 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'refresh') {
-        closeResults(); // Close the results window (in the case that it's shown)
         // If not in lobby
         if(!data.inLobby) {
-            showLobby();
             modifyLobby();
-            return;
         }
         // If in lobby but not in game
-        if(!data.inGame) {
-            showLobby();
+        else if(!data.inGame) {
             invited = data.invited;
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
             modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
-            return;
         }
         // If in game
-        hideLobby();
-        modifyGame(true, data.gameType, data.state, ws, username, token);
+        else {
+            hideLobby();
+            modifyGame(true, data.gameType, data.state, ws, username, token);
+        }
+
+        // If sending player back to lobby
+        if(data.backToLobby == true) {
+            closeResults();
+            showLobby();
+        }
     }
 
     else if(data.messageType === 'join') {
