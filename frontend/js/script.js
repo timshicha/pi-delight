@@ -9,8 +9,9 @@ const PORT = 80;
 
 var currentPage = 'register';
 // Possible states:
-// - home
 // - register
+// - lobby
+// - game
 
 // On page load, they're not logged in.
 localStorage.setItem("loggedIn", false);
@@ -61,7 +62,7 @@ const wsOnMessage = (event) => {
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
-            currentPage = 'home';
+            currentPage = 'lobby';
             updatePage();
         }
     }
@@ -75,8 +76,7 @@ const wsOnMessage = (event) => {
             username = data.username;
             token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
-            // currentPage = 'home';
-            currentPage = 'match';
+            currentPage = 'lobby';
             // After user has been validated, request a refresh of data
             requestRefresh();
             updatePage();
@@ -112,10 +112,12 @@ const wsOnMessage = (event) => {
     else if(data.messageType === 'refresh') {
         // If not in lobby
         if(!data.inLobby) {
+            currentPage = 'lobby';
             modifyLobby();
         }
         // If in lobby but not in game
         else if(!data.inGame) {
+            currentPage = 'lobby';
             invited = data.invited;
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
@@ -123,6 +125,7 @@ const wsOnMessage = (event) => {
         }
         // If in game
         else {
+            currentPage = 'game';
             hideLobby();
             modifyGame(true, data.gameType, data.state, ws, username, token);
         }
@@ -130,7 +133,10 @@ const wsOnMessage = (event) => {
         // If sending player back to lobby
         if(data.backToLobby == true) {
             closeResults();
-            showLobby();
+            if(data.inLobby && !data.inGame) {
+                showLobby();
+            }
+            updatePage();
         }
     }
 
@@ -291,8 +297,8 @@ const declineInvite = () => {
 
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
-    document.getElementById("homePage").style.display = "none";
     document.getElementById("lobbyPage").style.display = "none";
+    document.getElementById("gamePage").style.display = "none";
     lastUserListId = -1;
 }
 const updatePage = () => {
@@ -300,11 +306,11 @@ const updatePage = () => {
     if(currentPage === 'register') {
         document.getElementById("registerPage").style.display = "block";
     }
-    else if(currentPage === 'match') {
-        document.getElementById("lobbyPage").style.display = "block";
+    else if(currentPage === 'game') {
+        document.getElementById("gamePage").style.display = "block";
     }
     else {
-        document.getElementById("homePage").style.display = "block";
+        document.getElementById("lobbyPage").style.display = "block";
     }
 }
 
@@ -345,7 +351,7 @@ window.addEventListener('beforeunload', () => {
 // rather than back to previous url.
 window.onpopstate = (event) => {
     if(currentPage === 'match') {
-        currentPage = 'home';
+        currentPage = 'lobby';
         updatePage();
         event.preventDefault();
     }

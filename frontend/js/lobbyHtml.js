@@ -201,10 +201,12 @@ export const modifyLobbyButtons = (inLobby) => {
 
 // Hide lobby
 export const hideLobby = () => {
+    console.log("hide lobby");
     document.getElementById("lobbyPage").style.display = 'none';
 }
 
 // Show lobby
 export const showLobby = () => {
+    console.log("show lobby");
     document.getElementById("lobbyPage").style.display = 'block';
 }
