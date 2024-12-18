@@ -1,8 +1,8 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
 import { matchImagePaths } from "/js/imports/matchImports.js";
-import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons } from "./lobbyHtml.js";
-import { clearGame, modifyGame } from "./game.js";
+import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobbyHtml.js";
+import { clearGame, closeResults, modifyGame } from "./game.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -110,13 +110,16 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'refresh') {
+        closeResults(); // Close the results window (in the case that it's shown)
         // If not in lobby
         if(!data.inLobby) {
+            showLobby();
             modifyLobby();
             return;
         }
         // If in lobby but not in game
         if(!data.inGame) {
+            showLobby();
             invited = data.invited;
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
@@ -124,6 +127,7 @@ const wsOnMessage = (event) => {
             return;
         }
         // If in game
+        hideLobby();
         modifyGame(true, data.gameType, data.state, ws, username, token);
     }
 
@@ -314,7 +318,7 @@ const requestUpdates = () => {
     }
 }
 
-const requestRefresh = () => {
+export const requestRefresh = () => {
     ws.send(JSON.stringify({
         messageType: 'refresh',
         username: username,

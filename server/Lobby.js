@@ -90,11 +90,23 @@ export class Lobby {
             state: this.data(),
             invited: this.users[username].invited
         }));
+        // If game is over, send game over
+        if(this.game && this.game.gameIsOver) {
+            this.users[username].socket.send(JSON.stringify({
+                messageType: 'results',
+                gameType: gameType,
+                data: this.data()
+            }));
+        }
     }
 
     sendRefresh = () => {
         for (let i = 0; i < this.players.length; i++) {
             this.sendRefreshTo(this.players[i]);
+        }
+        // If game is over, reset the game after refresh
+        if(this.game && this.game.gameIsOver) {
+            this.game = null;
         }
     }
 }

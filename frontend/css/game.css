@@ -3,16 +3,18 @@
     display: none;
 }
 
-.gameResultDiv {
-    position: absolute;
+.gameResultsDiv {
+    position: fixed;
     background-color: rgb(205, 205, 205);
-    top: 30%;
-    left: calc(50% - 250px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 90%;
     max-width: 500px;
     height: fit-content;
     text-align: center;
     padding: 20px;
+    display: none;
 }
 
 .playerResultDiv {
@@ -24,23 +26,31 @@
 .playerResultDiv:first-child {
     margin-top: 20px;
 }
+
 .playerResultNumber {
-    flex: 7%;
+    width: 28px;
+    font-size: 20px;
     justify-self: start;
     text-align: right;
 }
 .playerResultUsername {
     flex: 70%;
     text-align: left;
-    margin-left: 35px;
-    font-size: 25px;
-    margin-top: 3px;
+    margin-left: 10px;
+    font-size: 18px;
+    margin-top: 1px;
+    overflow-x: hidden;
 }
 .playerResultScore {
-    flex: 20%;
+    font-size: 20px;
+    width: 50px;
     text-align: right;
-    margin-right: 20px;
+    margin-right: 5px;
 }
 .yellowBg {
     background-color: rgb(177, 177, 0);
+}
+
+.resultsBtn {
+    margin-top: 30px;
 }

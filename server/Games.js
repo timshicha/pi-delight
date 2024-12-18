@@ -239,9 +239,9 @@ export class MatchGame {
         let usernames = Object.keys(this.players);
         for (let i = 0; i < this.playerCount; i++) {
             players.push({
-                name: usernames[i],
+                username: usernames[i],
                 gender: this.players[usernames[i]].gender,
-                matches: this.players[usernames[i]].matches
+                score: this.players[usernames[i]].matches
             });
         }
         return {

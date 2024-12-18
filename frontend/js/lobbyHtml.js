@@ -198,3 +198,13 @@ export const modifyLobbyButtons = (inLobby) => {
         outOfLobbyBtns.style.display = 'block';
     }
 }
+
+// Hide lobby
+export const hideLobby = () => {
+    document.getElementById("lobbyPage").style.display = 'none';
+}
+
+// Show lobby
+export const showLobby = () => {
+    document.getElementById("lobbyPage").style.display = 'block';
+}

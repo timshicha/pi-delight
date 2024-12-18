@@ -1,4 +1,5 @@
 import { modifyMatchGame } from "./matchGame";
+import { requestRefresh } from "./script";
 
 // Modify match game page
 export const modifyGame = (inGame, gameType, state, ws, username, token) => {
@@ -21,4 +22,58 @@ export const clearGame = () => {
 
     // Remove game div
     document.getElementById("gamePage").style.display = 'none';
+}
+
+const createPlayerResultDiv = (number, username, score) => {
+    const playerResultDiv = document.createElement("div");
+    const playerResultNumber = document.createElement("div");
+    const playerResultUsername = document.createElement("div");
+    const playerResultScore = document.createElement("div");
+    playerResultDiv.classList.add("playerResultDiv");
+    playerResultNumber.classList.add("playerResultNumber");
+    playerResultUsername.classList.add("playerResultUsername");
+    playerResultScore.classList.add("playerResultScore");
+    playerResultNumber.innerText = number + ".";
+    playerResultUsername.innerText = username;
+    playerResultScore.innerText = score;
+    playerResultDiv.replaceChildren(playerResultNumber, playerResultUsername, playerResultScore);
+    return playerResultDiv;
+}
+
+// Show the screen with results (scored, rankings, etc)
+// sort: auto-sort the players by score
+export const showResults = (username, data, sort = true) => {
+    const gameResultsDiv = document.getElementById("gameResultsDiv");
+    // If no data, just make results div visible (old data)
+    if(!data) {
+        gameResultsDiv.style.display = 'block';
+    }
+
+    if(sort) {
+        data.sort((player) => -player.score, );
+    }
+
+    // Clear children
+    const playerResultContainer = document.getElementById("playerResultContainer");
+    playerResultContainer.replaceChildren();
+    // For each player, show their score
+    for (let i = 0; i < data.length; i++) {
+        console.log(data);
+        const playerResultDiv = createPlayerResultDiv(i + 1, data[i].username, data[i].score);
+        if(username === data[i].username) {
+            playerResultDiv.classList.add("yellowBg");
+        }
+        playerResultContainer.appendChild(playerResultDiv);
+    }
+
+    gameResultsDiv.style.display = 'block';
+}
+
+// Close the results window and send user back to lobby
+export const closeResults = () => {
+    document.getElementById("gameResultsDiv").style.display = 'none';
+}
+document.getElementById("closeResultsBtn").onclick = () => {
+    closeResults();
+    requestRefresh();
 }

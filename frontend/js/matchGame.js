@@ -1,3 +1,4 @@
+import { showResults } from "./game";
 import { matchImagePaths } from "./imports/matchImports";
 
 const roundUpToNearest = (number, roundTo) => {
@@ -91,6 +92,6 @@ export const modifyMatchGame = (state, ws, username, token) => {
 
     // If game is over
     if(state.game.gameIsOver) {
-        matchPrompt.innerText = JSON.stringify(state.game.players);
+        showResults(username, state.game.players);
     }
 }
