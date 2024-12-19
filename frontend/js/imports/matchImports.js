@@ -1,26 +1,26 @@
 const pathToImages = '/assets/match/';
 
 export const matchImagePaths = [
-'alien.png',
-'apple.png',
-'ark.png',
-'blueRose.png',
-'bowAndArrow.png',
-'brocoliFace.png',
-'cat.png',
-'cellTower.png',
-'cone.png',
-'doors.png',
-'dumbbell.png',
-'house.png',
-'jupiterRock.png',
-'lock.png',
-'shorts.png',
-'snowboarder.png',
-'soccerBall.png',
-'syringe.png',
-'ufo.png',
-'wheelbarrow.png'
+    'camel.svg',
+    'deer.svg',
+    'dog.svg',
+    'fox.svg',
+    'frog.svg',
+    'giraffe.svg',
+    'gorilla.svg',
+    'lion.svg',
+    'monkey.svg',
+    'owl.svg',
+    'parrot.svg',
+    'penguin.svg',
+    'polarBear.svg',
+    'racoon.svg',
+    'seal.svg',
+    'shark.svg',
+    'squirrel.svg',
+    'tiger.svg',
+    'wolf.svg',
+    'zebra.svg'
 ];
 
 // Add path to each image
