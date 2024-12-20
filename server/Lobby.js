@@ -63,7 +63,7 @@ export class Lobby {
     startGame = () => {
         console.log(this.players);
         console.log("starting game");
-        this.game = new MatchGame(this.players);
+        this.game = new MatchGame(this.players, this.sendRefresh);
         this.sendRefresh();
     }
 

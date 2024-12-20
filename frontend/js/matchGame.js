@@ -1,4 +1,4 @@
-import { showResults } from "./game";
+import { endTimer, showResults, startTimer } from "./game";
 import { matchImagePaths } from "./imports/matchImports";
 
 const roundUpToNearest = (number, roundTo) => {
@@ -82,9 +82,11 @@ export const modifyMatchGame = (state, ws, username, token) => {
     const matchPrompt = document.getElementById("matchPrompt");
     if(state.game.currentTurn === username) {
         matchPrompt.innerText = "Your turn";
+        startTimer(5, 5);
     }
     else {
         matchPrompt.innerText = "";
+        endTimer();
     }
 
     // If game is over

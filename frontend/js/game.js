@@ -78,3 +78,38 @@ document.getElementById("closeResultsBtn").onclick = () => {
     closeResults();
     requestRefresh();
 }
+
+var timerIntervalID = null;
+const timerUpdateInterval = 50; // Update timer bar every 50 ms
+export const startTimer = (currentTime, totalTime) => {
+    const timerBar = document.getElementById("timerBar");
+    let width = (currentTime / totalTime) * 100;
+    const duration = currentTime * 1000
+    const step = (100 / duration) * timerUpdateInterval
+    clearInterval(timerIntervalID);
+
+    // Reset the width of the timer bar without effect
+    timerBar.style.transition = '';
+    timerBar.style.width = width + '%';
+    timerBar.style.transition =
+        'width ' + parseInt(timerUpdateInterval / 1000)+ 's linear';
+    
+    timerIntervalID = setInterval(() => {
+        if(width <= 0) {
+            clearInterval(timerIntervalID);
+        }
+        else {
+            width -= step;
+            timerBar.style.width = width + '%';
+        }
+    }, timerUpdateInterval);
+}
+
+export const endTimer = () => {
+    clearInterval(timerIntervalID);
+    const timerBar = document.getElementById("timerBar");
+    timerBar.style.transition = '';
+    timerBar.style.width = '0%';
+    timerBar.style.transition =
+        'width ' + parseInt(timerUpdateInterval / 1000)+ 's linear';
+}

@@ -54,3 +54,17 @@
 .resultsBtn {
     margin-top: 30px;
 }
+
+.timerContainer {
+    width: 300px;
+    background-color: black;
+    height: 40px;
+    overflow: hidden;
+    margin: auto;
+}
+.timerBar {
+    height: 100%;
+    width: 100%;
+    background-color: red;
+    transition: width 0.1s linear;
+}

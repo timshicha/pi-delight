@@ -1,4 +1,5 @@
-const MATCH_SETS = 8; // How many sets of cards there are
+const MATCH_SETS = 3; // How many sets of cards there are
+const MATCH_TIME = 5; // How many seconds the player has to make a move
 const MATCH_CARDS = 20; // How many different match cards the FE has
 
 const randInt = (min, max) => {
@@ -14,7 +15,7 @@ const shuffleArray = (array) => {
 }
 
 export class MatchGame {
-    constructor (players) {
+    constructor (players, sendRefreshFunc) {
         if(players.length < 1) return; // Minimum of 1 players
         if(players.length > 4) return; // Maxinum of 4 players
         this.gameType = "Match";
@@ -31,6 +32,8 @@ export class MatchGame {
         this.firstCardIndex = -1;
         this.secondCardIndex = -1;
         this.gameIsOver = false;
+        this.turnTimeoutID = null;
+        this.sendRefreshFunc = sendRefreshFunc;
 
         // Add each player
         for (let i = 0; i < players.length; i++) {
@@ -48,14 +51,25 @@ export class MatchGame {
         console.log("game started");
     }
 
-    nextTurn = () => {
+    // If nextPlayer is false, same player moves again
+    nextTurn = (nextPlayer = true) => {
         if(this.gameIsOver) {
             return;
         }
-        this.currentTurnIndex++;
-        if(this.currentTurnIndex >= this.playerCount) {
-            this.currentTurnIndex = 0;
+        // Reset previous timer (if any)
+        clearTimeout(this.turnTimeoutID);
+        this.firstCardChosen = false;
+        this.firstCardIndex = -1;
+        this.secondCardIndex = -1;
+        if(nextPlayer) {
+            this.currentTurnIndex++;
+            if(this.currentTurnIndex >= this.playerCount) {
+                this.currentTurnIndex = 0;
+            }
         }
+        // Set the turn to expire after MATCH_TIME seconds
+        this.turnTimeoutID = setTimeout(() => this.nextTurn(), MATCH_TIME * 1000);
+        this.sendRefreshFunc();
     }
 
     updateVisibleBoard = () => {
@@ -160,6 +174,8 @@ export class MatchGame {
         if(this.firstCardChosen && this.firstCardIndex === cardChosen) {
             return false;
         }
+        // Clear turn timeout
+        clearTimeout(this.turnTimeoutID);
         // If first card
         if(!this.firstCardChosen) {
             this.firstCardIndex = cardChosen;
@@ -176,6 +192,7 @@ export class MatchGame {
                 this.cardsLeft[this.firstCardIndex] = 0;
                 this.cardsLeft[this.secondCardIndex] = 0;
                 this.players[username].matches++;
+                this.nextTurn(false);
             }
             else {
                 this.nextTurn();
@@ -200,6 +217,7 @@ export class MatchGame {
             }
         }
         this.gameIsOver = true;
+        clearTimeout(this.turnTimeoutID);
     }
 
     startGame = () => {
