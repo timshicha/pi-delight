@@ -82,7 +82,9 @@ export const modifyMatchGame = (state, ws, username, token) => {
     const matchPrompt = document.getElementById("matchPrompt");
     if(state.game.currentTurn === username) {
         matchPrompt.innerText = "Your turn";
-        startTimer(5, 5);
+        if(!state.game.firstCardChosen) {
+            startTimer(5, 5);
+        }
     }
     else {
         matchPrompt.innerText = "";

@@ -267,7 +267,8 @@ export class MatchGame {
             admin: this.admin,
             visibleBoard: this.visibleBoard,
             currentTurn: this.gameIsOver ? null: this.getTurnUsername(),
-            gameIsOver: this.gameIsOver
+            gameIsOver: this.gameIsOver,
+            firstCardChosen: this.firstCardChosen
         };
     }
 
