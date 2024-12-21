@@ -10,6 +10,16 @@ const roundUpToNearest = (number, roundTo) => {
 }
 
 export const modifyMatchGame = (state, ws, username, token) => {
+    // If game is over, show results
+    if(state.game.gameIsOver) {
+        showResults(username, state.game.players);
+        document.getElementById("timerContainer").style.display = 'none';
+        document.getElementById("matchPrompt").style.display = 'none';
+    }
+    else {
+        document.getElementById("timerContainer").style.display = 'block';
+        document.getElementById("matchPrompt").style.display = 'block';
+    }
     console.log("modifyMatchGame:", state);
     // Make sure the right number of cards is displayed
     const matchContainer = document.getElementById("matchContainer");
@@ -77,28 +87,31 @@ export const modifyMatchGame = (state, ws, username, token) => {
             }
         }
     }
-
-
-    // If game is over
-    if(state.game.gameIsOver) {
-        showResults(username, state.game.players);
-    }
     
-    // If it's the pause in between turns, don't show turn yet
+    const matchPrompt = document.getElementById("matchPrompt");
+    // // If it's the pause in between turns, don't show turn yet
     if(state.game.turnPause) {
         endTimer();
+        matchPrompt.innerText = "Starting...";
         return;
     }
-    // Tell player it's their turn
-    const matchPrompt = document.getElementById("matchPrompt");
+    // If it's this player's turn
     if(state.game.currentTurn === username) {
         matchPrompt.innerText = "Your turn";
         if(!state.game.firstCardChosen) {
             startTimer(5, 5, true);
         }
     }
+    // If it's someone else's turn
     else {
-        matchPrompt.innerText = "Current turn: " + state.game.currentTurn;
+        let matchPromptMsg;
+        if(state.game.currentTurn) {
+            matchPromptMsg = "Current turn: " + state.game.currentTurn;
+        }
+        else {
+            matchPromptMsg = "Starting...";
+        }
+        matchPrompt.innerText = matchPromptMsg;
         if(!state.game.firstCardChosen) {
             startTimer(5, 5, false);
         }
