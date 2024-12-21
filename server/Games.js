@@ -1,5 +1,5 @@
 
-const MATCH_SETS = 3; // How many sets of cards there are
+const MATCH_SETS = 10; // How many sets of cards there are
 const MATCH_TIME = 5; // How many seconds the player has to make a move
 const MATCH_CARDS = 20; // How many different match cards the FE has
 const MATCH_TURN_PAUSE = 1; // How many seconds to pause for between turns
@@ -63,22 +63,24 @@ export class MatchGame {
         if(this.gameIsOver) {
             return;
         }
+        if(nextPlayer) {
+            this.currentTurnIndex++;
+            if(this.currentTurnIndex >= this.playerCount) {
+                this.currentTurnIndex = 0;
+            }
+        }
+        this.startTurn(nextPlayer);
+    }
+
+    startTurn = (pause=true) => {
         // Reset previous timer (if any)
         clearTimeout(this.turnTimeoutID);
         this.turnPause = true;
-        // Pause if turn switched players (incorrect cards chosen).
-        // No point of pausing if the cards were correct
-        let pause = nextPlayer ? 1: 0;
+        pause = pause ? 1 : 0;
         setTimeout(() => {
             this.firstCardChosen = false;
             this.firstCardIndex = -1;
             this.secondCardIndex = -1;
-            if(nextPlayer) {
-                this.currentTurnIndex++;
-                if(this.currentTurnIndex >= this.playerCount) {
-                    this.currentTurnIndex = 0;
-                }
-            }
             // Set the turn to expire after MATCH_TIME seconds
             this.turnTimeoutID = setTimeout(() => this.nextTurn(), MATCH_TIME * 1000);
             this.turnPause = false;
@@ -257,7 +259,7 @@ export class MatchGame {
         }
         // Now shuffle the array
         this.board = shuffleArray(this.board);
-        this.nextTurn();
+        this.startTurn();
         return true;
     }
 
