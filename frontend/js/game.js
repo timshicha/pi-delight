@@ -1,3 +1,4 @@
+import { showLobby } from "./lobbyHtml";
 import { modifyMatchGame } from "./matchGame";
 import { requestRefresh } from "./script";
 
@@ -76,6 +77,7 @@ export const closeResults = () => {
 }
 document.getElementById("closeResultsBtn").onclick = () => {
     closeResults();
+    showLobby();
     requestRefresh();
 }
 

@@ -81,9 +81,15 @@ export const modifyMatchGame = (state, ws, username, token) => {
     // Tell player it's their turn
     const matchPrompt = document.getElementById("matchPrompt");
     if(state.game.currentTurn === username) {
-        matchPrompt.innerText = "Your turn";
-        if(!state.game.firstCardChosen) {
-            startTimer(5, 5);
+        // If it's the pause in between turns, don't show turn yet
+        if(state.game.turnPause) {
+            endTimer();
+        }
+        else {
+            matchPrompt.innerText = "Your turn";
+            if(!state.game.firstCardChosen) {
+                startTimer(5, 5);
+            }
         }
     }
     else {

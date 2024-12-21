@@ -1,6 +1,8 @@
+
 const MATCH_SETS = 3; // How many sets of cards there are
 const MATCH_TIME = 5; // How many seconds the player has to make a move
 const MATCH_CARDS = 20; // How many different match cards the FE has
+const MATCH_TURN_PAUSE = 1; // How many seconds to pause for between turns
 
 const randInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -34,6 +36,11 @@ export class MatchGame {
         this.gameIsOver = false;
         this.turnTimeoutID = null;
         this.sendRefreshFunc = sendRefreshFunc;
+        // If we are in between turns, turnPause is on. This allows
+        // the cards to remain flipped for x time before being flipped
+        // back so the players can see the reveal and memorize.
+        this.turnPause = false;
+        this.turnPauseID = null;
 
         // Add each player
         for (let i = 0; i < players.length; i++) {
@@ -58,18 +65,26 @@ export class MatchGame {
         }
         // Reset previous timer (if any)
         clearTimeout(this.turnTimeoutID);
-        this.firstCardChosen = false;
-        this.firstCardIndex = -1;
-        this.secondCardIndex = -1;
-        if(nextPlayer) {
-            this.currentTurnIndex++;
-            if(this.currentTurnIndex >= this.playerCount) {
-                this.currentTurnIndex = 0;
+        this.turnPause = true;
+        // Pause if turn switched players (incorrect cards chosen).
+        // No point of pausing if the cards were correct
+        let pause = nextPlayer ? 1: 0;
+        setTimeout(() => {
+            this.firstCardChosen = false;
+            this.firstCardIndex = -1;
+            this.secondCardIndex = -1;
+            if(nextPlayer) {
+                this.currentTurnIndex++;
+                if(this.currentTurnIndex >= this.playerCount) {
+                    this.currentTurnIndex = 0;
+                }
             }
-        }
-        // Set the turn to expire after MATCH_TIME seconds
-        this.turnTimeoutID = setTimeout(() => this.nextTurn(), MATCH_TIME * 1000);
-        this.sendRefreshFunc();
+            // Set the turn to expire after MATCH_TIME seconds
+            this.turnTimeoutID = setTimeout(() => this.nextTurn(), MATCH_TIME * 1000);
+            this.turnPause = false;
+            this.updateVisibleBoard();
+            this.sendRefreshFunc();
+        }, MATCH_TURN_PAUSE * 1000 * pause);
     }
 
     updateVisibleBoard = () => {
@@ -144,7 +159,10 @@ export class MatchGame {
 
     // Wrap the makeTurn call for safety
     makeMove = (username, moveInfo) => {
-        console.log(this.board);
+        // If currently a turn pause, exit
+        if(this.turnPause) {
+            return;
+        }
         // Make sure it's their turn
         if(this.getTurnUsername() !== username) {
             return;
@@ -174,8 +192,7 @@ export class MatchGame {
         if(this.firstCardChosen && this.firstCardIndex === cardChosen) {
             return false;
         }
-        // Clear turn timeout
-        clearTimeout(this.turnTimeoutID);
+        
         // If first card
         if(!this.firstCardChosen) {
             this.firstCardIndex = cardChosen;
@@ -184,6 +201,7 @@ export class MatchGame {
         // If second card
         else {
             this.secondCardIndex = cardChosen;
+            clearTimeout(this.turnTimeoutID);
         }
         // If second card, check for match
         if(this.firstCardChosen) {
@@ -239,7 +257,7 @@ export class MatchGame {
         }
         // Now shuffle the array
         this.board = shuffleArray(this.board);
-        console.log(this.board);
+        this.nextTurn();
         return true;
     }
 
@@ -268,12 +286,22 @@ export class MatchGame {
             visibleBoard: this.visibleBoard,
             currentTurn: this.gameIsOver ? null: this.getTurnUsername(),
             gameIsOver: this.gameIsOver,
-            firstCardChosen: this.firstCardChosen
+            firstCardChosen: this.firstCardChosen,
+            turnPause: this.turnPause
         };
     }
 
     isActive = () => {
         return !this.gameIsOver;
+    }
+
+    pauseTurn = () => {
+        clearInterval(this.turnPauseID);
+        this.turnPause = true;
+        this.turnPauseID = setTimeout(() => {
+            this.turnPause = false;
+            this.sendRefreshFunc();
+        }, MATCH_TURN_PAUSE * 1000);
     }
 }
 

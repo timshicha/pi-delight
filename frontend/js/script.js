@@ -301,7 +301,10 @@ const clearPages = () => {
     document.getElementById("gamePage").style.display = "none";
     lastUserListId = -1;
 }
-const updatePage = () => {
+export const updatePage = (newPage = null) => {
+    if(newPage) {
+        currentPage = newPage;
+    }
     clearPages();
     if(currentPage === 'register') {
         document.getElementById("registerPage").style.display = "block";

@@ -1,3 +1,5 @@
+import { updatePage } from "./script";
+
 
 const createInvitePlayer = (username, status, usersInvited, ws, myUsername, token) => {
     const element = document.createElement("div");
@@ -207,6 +209,7 @@ export const hideLobby = () => {
 
 // Show lobby
 export const showLobby = () => {
+    updatePage('lobby');
     console.log("show lobby");
     document.getElementById("lobbyPage").style.display = 'block';
 }
