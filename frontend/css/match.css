@@ -31,3 +31,9 @@
     -webkit-user-drag: none;
     user-select: none;
 }
+
+.matchPrompt {
+    text-align: center;
+    height: fit-content;
+    font-size: 20px;
+}

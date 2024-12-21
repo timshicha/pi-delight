@@ -83,8 +83,16 @@ document.getElementById("closeResultsBtn").onclick = () => {
 
 var timerIntervalID = null;
 const timerUpdateInterval = 50; // Update timer bar every 50 ms
-export const startTimer = (currentTime, totalTime) => {
+// playerInFocus: if true, it is this player's turn. Make the bar
+// colorful instead of gray
+export const startTimer = (currentTime, totalTime, playerInFocus=false) => {
     const timerBar = document.getElementById("timerBar");
+    if(playerInFocus) {
+        timerBar.style.backgroundColor = 'rgb(0, 220, 0)';
+    }
+    else {
+        timerBar.style.backgroundColor = 'gray';
+    }
     let width = (currentTime / totalTime) * 100;
     const duration = currentTime * 1000
     const step = (100 / duration) * timerUpdateInterval

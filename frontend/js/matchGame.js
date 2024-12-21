@@ -77,28 +77,30 @@ export const modifyMatchGame = (state, ws, username, token) => {
             }
         }
     }
-    
-    // Tell player it's their turn
-    const matchPrompt = document.getElementById("matchPrompt");
-    if(state.game.currentTurn === username) {
-        // If it's the pause in between turns, don't show turn yet
-        if(state.game.turnPause) {
-            endTimer();
-        }
-        else {
-            matchPrompt.innerText = "Your turn";
-            if(!state.game.firstCardChosen) {
-                startTimer(5, 5);
-            }
-        }
-    }
-    else {
-        matchPrompt.innerText = "";
-        endTimer();
-    }
+
 
     // If game is over
     if(state.game.gameIsOver) {
         showResults(username, state.game.players);
+    }
+    
+    // If it's the pause in between turns, don't show turn yet
+    if(state.game.turnPause) {
+        endTimer();
+        return;
+    }
+    // Tell player it's their turn
+    const matchPrompt = document.getElementById("matchPrompt");
+    if(state.game.currentTurn === username) {
+        matchPrompt.innerText = "Your turn";
+        if(!state.game.firstCardChosen) {
+            startTimer(5, 5, true);
+        }
+    }
+    else {
+        matchPrompt.innerText = "Current turn: " + state.game.currentTurn;
+        if(!state.game.firstCardChosen) {
+            startTimer(5, 5, false);
+        }
     }
 }
