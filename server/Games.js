@@ -1,5 +1,5 @@
 
-const MATCH_SETS = 10; // How many sets of cards there are
+const MATCH_SETS = 3; // How many sets of cards there are
 const MATCH_TIME = 5; // How many seconds the player has to make a move
 const MATCH_CARDS = 20; // How many different match cards the FE has
 const MATCH_TURN_PAUSE = 1; // How many seconds to pause for between turns
@@ -199,32 +199,29 @@ export class MatchGame {
         if(!this.firstCardChosen) {
             this.firstCardIndex = cardChosen;
             this.secondCardIndex = -1;
+            this.firstCardChosen = true;
         }
         // If second card
         else {
             this.secondCardIndex = cardChosen;
             clearTimeout(this.turnTimeoutID);
-        }
-        // If second card, check for match
-        if(this.firstCardChosen) {
             // If a match
             if(this.board[this.firstCardIndex] === this.board[this.secondCardIndex]) {
                 this.cardsLeft[this.firstCardIndex] = 0;
                 this.cardsLeft[this.secondCardIndex] = 0;
                 this.players[username].matches++;
-                this.nextTurn(false);
+                // Check if the game is over
+                this.checkGameOver();
+                if(!this.gameIsOver) {
+                    this.nextTurn(false);
+                }
             }
             else {
                 this.nextTurn();
             }
             this.firstCardChosen = false;
         }
-        else {
-            this.firstCardChosen = true;
-        }
         this.updateVisibleBoard();
-        // If game is over
-        this.checkGameOver();
         return true;
     }
 
