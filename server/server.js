@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import { deleteGame, MatchGame } from './Games.js';
 import { Lobby } from './Lobby.js';
+import { send } from 'vite';
 
 dotenv.config();
 const TEST_USERNAMES = ['Tim', 'Frank', 'Joe', 'Bob', 'Luke'];
@@ -254,17 +255,7 @@ wss.on('connection', (ws, req) => {
 
         // If the user wants to refresh the current lobby state
         if(res.messageType === 'refresh') {
-            // If not in a lobby, return
-            if(!users[res.username].lobby) {
-                ws.send(JSON.stringify({
-                    messageType: 'refresh',
-                    inLobby: false
-                }));
-                return;
-            }
-            // Otherwise, send lobby state
-            users[res.username].lobby.sendRefreshTo(res.username);
-            return;
+            sendRefresh(ws, res);
         }
 
         // If sent a game invite
@@ -389,6 +380,8 @@ wss.on('connection', (ws, req) => {
                 modifyUserStatus(res.username);
                 // Send message of updated lobby to all players in the lobby
                 lobby.sendRefresh(false);
+                // Send refresh to player that left
+                sendRefresh(ws, res);
             }
             return;
         }
@@ -407,7 +400,7 @@ wss.on('connection', (ws, req) => {
             users[res.username].invited = []; // Reset invited list to allow invites to this lobby
             lobby.addPlayer(res.username);
             modifyUserStatus(res.username);
-            lobby.sendRefresh();
+            lobby.sendRefresh(ws,res);
             return;
         }
 
@@ -452,3 +445,17 @@ wss.on('connection', (ws, req) => {
         removeUserOnline(ws.username);
     });
 });
+
+const sendRefresh = (ws, res) => {
+    // If not in a lobby, return
+    if(!users[res.username].lobby) {
+        ws.send(JSON.stringify({
+            messageType: 'refresh',
+            inLobby: false
+        }));
+        return;
+    }
+    // Otherwise, send lobby state
+    users[res.username].lobby.sendRefreshTo(res.username);
+    return;
+}

@@ -1,8 +1,7 @@
 import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
-import { matchImagePaths } from "/js/imports/matchImports.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobbyHtml.js";
-import { clearGame, closeResults, modifyGame, showResults } from "./game.js";
+import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
 const HOST = '192.168.0.23';
 const PORT = 80;
@@ -114,6 +113,7 @@ const wsOnMessage = (event) => {
         if(!data.inLobby) {
             currentPage = 'lobby';
             modifyLobby();
+            updatePage();
         }
         // If in lobby but not in game
         else if(!data.inGame) {
@@ -122,12 +122,14 @@ const wsOnMessage = (event) => {
             playersInLobby = data.state.players || [];
             modifyLobby(playersInLobby, data.state.icons, 4, username, kickFunction);
             modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
+            updatePage();
         }
         // If in game
         else {
             currentPage = 'game';
             hideLobby();
             modifyGame(true, data.gameType, data.state, ws, username, token);
+            updatePage();
         }
 
         // If sending player back to lobby
@@ -401,3 +403,7 @@ document.getElementById("startGameBtn").addEventListener('click', () => {
         game: game
     }));
 });
+
+document.getElementById("leaveGameBtn").onclick = () => {
+    leaveGame(ws, username, token);
+}

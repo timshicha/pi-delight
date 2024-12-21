@@ -123,3 +123,11 @@ export const endTimer = () => {
     timerBar.style.transition =
         'width ' + parseInt(timerUpdateInterval / 1000)+ 's linear';
 }
+
+export const leaveGame = (ws, username, token) => {
+    ws.send(JSON.stringify({
+        messageType: 'leaveGame',
+        username: username,
+        token: token
+    }));
+}
