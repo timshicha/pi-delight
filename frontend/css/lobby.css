@@ -117,10 +117,11 @@
     display: none;
 }
 
-#gameSelectDropdown {
-    width: 200px;
+.gameSelectDropdown {
+    width: 150px;
     text-align: center;
     border-width: 10px;
+    padding-left: 10px;
 }
 
 .invitePlayerDiv {

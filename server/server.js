@@ -3,9 +3,7 @@ import { WebSocketServer } from 'ws';
 import path, { dirname } from 'path';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
-import { deleteGame, MatchGame } from './Games.js';
 import { Lobby } from './Lobby.js';
-import { send } from 'vite';
 
 dotenv.config();
 const TEST_USERNAMES = ['Tim', 'Frank', 'Joe', 'Bob', 'Luke'];
@@ -49,22 +47,7 @@ var usersOnline = {};
 var usersOnlineJson = JSON.stringify(usersOnline);
 
 const addUserOnline = (username) => {
-    let status;
-    if(!users[username].lobby) {
-        status = " ";
-    }
-    else if(!users[username].lobby.game) {
-        status = "In a lobby";
-    }
-    else {
-        status = "Playing in a game";
-    }
-    usersOnline[username] = {
-        status: status
-    };
-    usersOnlineJson = JSON.stringify(usersOnline);
-    lastUserListId++;
-    console.log("add user online");
+    modifyUserStatus(username);
 }
 
 const removeUserOnline = (username => {

@@ -88,17 +88,16 @@ const wsOnMessage = (event) => {
         // Remove yourself from the list
         delete usersOnline[username]; 
         const usernames = Object.keys(usersOnline);
-        let usersOnlineHtml = "";
+        let usersOnlineList = document.getElementById("usersOnlineList");
+        usersOnlineList.replaceChildren();
 
-        // If on home screen, generate HTML for users online.
         if(currentPage === 'home') {
             for (let i = 0; i < usernames.length; i++) {
-                usersOnlineHtml += generateUserHtml(usernames[i], usersOnline[usernames[i]].status);
+                usersOnlineList.appendChild(generateUserHtml(usernames[i], usersOnline[usernames[i]].status));
             }
             if(usernames.length === 0) {
-                usersOnlineHtml = generateNoUsersHtml();
+                usersOnlineList.appendChild(generateNoUsersHtml());
             }
-            document.getElementById("usersOnlineContainer").innerHTML = usersOnlineHtml;
         }
         // Otherwise generate HTML for lobby invites
         modifyInvitePlayersList(usersOnline, invited, playersInLobby, ws, username, token);
@@ -111,7 +110,7 @@ const wsOnMessage = (event) => {
     else if(data.messageType === 'refresh') {
         // If not in lobby
         if(!data.inLobby) {
-            currentPage = 'lobby';
+            currentPage = 'home';
             modifyLobby();
             updatePage();
         }
@@ -299,6 +298,7 @@ const declineInvite = () => {
 
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
+    document.getElementById("homePage").style.display = "none";
     document.getElementById("lobbyPage").style.display = "none";
     document.getElementById("gamePage").style.display = "none";
     lastUserListId = -1;
@@ -314,8 +314,16 @@ export const updatePage = (newPage = null) => {
     else if(currentPage === 'game') {
         document.getElementById("gamePage").style.display = "block";
     }
+    // If home or lobby
     else {
         document.getElementById("lobbyPage").style.display = "block";
+        // If home, also show home stuff
+        if(currentPage === 'home') {
+            document.getElementById("homePage").style.display = "block";
+        }
+        else {
+            document.getElementById("homePage").style.display = "none";
+        }
     }
 }
 
@@ -369,12 +377,6 @@ document.getElementById("registerForm").addEventListener('submit', (event) => {
         messageType: "createUser",
         username: username
     }));
-});
-
-document.getElementById("matchCard").addEventListener('click', () => {
-    currentPage = 'match';
-    history.pushState(null, null);
-    updatePage();
 });
 
 document.getElementById("createMatchGameBtn").addEventListener('click', () => {
