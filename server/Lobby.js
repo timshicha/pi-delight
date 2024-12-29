@@ -60,11 +60,11 @@ export class Lobby {
         this.icons = this.players.map(username => this.users[username].icon);
     }
 
-    startGame = () => {
-        console.log(this.players);
+    startGame = (gameType) => {
         console.log("starting game");
-        this.game = new MatchGame(this.players, this.sendRefresh);
-        // If new game, send back to lobby
+        if(gameType === "Match") {
+            this.game = new MatchGame(this.players, this.sendRefresh);
+        }
         this.sendRefresh(true);
     }
 

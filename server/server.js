@@ -398,9 +398,7 @@ wss.on('connection', (ws, req) => {
             if(lobby.game && lobby.game.isActive()) {
                 return;
             }
-            // Start the game
-            lobby.startGame();
-            return;
+            lobby.startGame(res.game);
         }
 
         // If a move in a game
