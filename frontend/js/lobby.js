@@ -1,4 +1,4 @@
-import { updatePage } from "./script";
+import { updatePage } from "./script.js";
 
 
 const createInvitePlayer = (username, status, usersInvited, ws, myUsername, token) => {

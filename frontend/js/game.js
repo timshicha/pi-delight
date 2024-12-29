@@ -1,6 +1,6 @@
-import { showLobby } from "./lobbyHtml";
-import { modifyMatchGame } from "./matchGame";
-import { requestRefresh } from "./script";
+import { showLobby } from "./lobby.js";
+import { modifyMatchGame } from "./match.js";
+import { requestRefresh } from "./script.js";
 
 // Modify match game page
 export const modifyGame = (inGame, gameType, state, ws, username, token) => {

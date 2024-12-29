@@ -1,6 +1,6 @@
 import PiDelightSocket from "./PiDelightSocket.js";
-import { generateNoUsersHtml, generateUserHtml } from "./homePageHtml.js";
-import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobbyHtml.js";
+import { generateNoUsersHtml, generateUserHtml } from "./home.js";
+import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
 const HOST = '192.168.0.23';

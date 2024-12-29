@@ -1,5 +1,5 @@
-import { endTimer, showResults, startTimer } from "./game";
-import { matchImagePaths } from "./imports/matchImports";
+import { endTimer, showResults, startTimer } from "./game.js";
+import { matchImagePaths } from "./imports/matchImports.js";
 
 const roundUpToNearest = (number, roundTo) => {
     let add = roundTo - (number % roundTo);
@@ -39,6 +39,7 @@ export const modifyMatchGame = (state, ws, username, token) => {
             newCardImg.src = "/assets/questionMark.png";
             newCardImg.style.width = "100%";
             newCardImg.style.opacity = 0.2;
+            newCardImg.classList.add("matchImg");
             newCardElement.appendChild(newCardImg);
             matchContainer.appendChild(newCardElement);
 
