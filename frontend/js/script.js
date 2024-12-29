@@ -3,7 +3,7 @@ import { generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
-const HOST = '192.168.0.23';
+const HOST = '192.168.0.94';
 const PORT = 80;
 
 var currentPage = 'register';
@@ -35,6 +35,7 @@ var usersOnline = [];
 var invited = [];
 var inGame = false;
 var playersInLobby = [];
+var currentGameType = null;
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -126,6 +127,7 @@ const wsOnMessage = (event) => {
         // If in game
         else {
             currentPage = 'game';
+            currentGameType = data.gameType;
             hideLobby();
             modifyGame(true, data.gameType, data.state, ws, username, token);
             updatePage();
@@ -303,6 +305,12 @@ const clearPages = () => {
     document.getElementById("gamePage").style.display = "none";
     lastUserListId = -1;
 }
+
+const clearGames = () => {
+    document.getElementById("matchDiv").style.display = "none";
+    document.getElementById("shooterGameDiv").style.display = "none";
+}
+
 export const updatePage = (newPage = null) => {
     if(newPage) {
         currentPage = newPage;
@@ -313,6 +321,13 @@ export const updatePage = (newPage = null) => {
     }
     else if(currentPage === 'game') {
         document.getElementById("gamePage").style.display = "block";
+        clearGames();
+        if(currentGameType === "Match") {
+            document.getElementById("matchDiv").style.display = "block";
+        }
+        else if(currentGameType === "Shooter Game") {
+            document.getElementById("shooterGameDiv").style.display = "block";
+        }
     }
     // If home or lobby
     else {
