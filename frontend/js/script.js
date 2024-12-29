@@ -324,9 +324,11 @@ export const updatePage = (newPage = null) => {
         clearGames();
         if(currentGameType === "Match") {
             document.getElementById("matchDiv").style.display = "block";
+            document.getElementById("leaveGameBtn").style.display = "block";
         }
         else if(currentGameType === "Shooter Game") {
             document.getElementById("shooterGameDiv").style.display = "block";
+            document.getElementById("leaveGameBtn").style.display = "none";
         }
     }
     // If home or lobby

@@ -1,5 +1,6 @@
 import { showLobby } from "./lobby.js";
 import { modifyMatchGame } from "./match.js";
+import { modifyShooterGame } from "./shooterGame.js";
 import { requestRefresh } from "./script.js";
 
 // Modify match game page
@@ -13,6 +14,9 @@ export const modifyGame = (inGame, gameType, state, ws, username, token) => {
     gamePageDiv.style.display = 'block';
     if(gameType === 'Match') {
         modifyMatchGame(state, ws, username, token);
+    }
+    else if(gameType === 'Shooter Game') {
+        modifyShooterGame(state, ws, username, token);
     }
 }
 
