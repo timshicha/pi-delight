@@ -1,5 +1,27 @@
 import Matter from 'matter-js';
 import NippleJS from 'nipplejs'; // used for joysticks
+import boyAsset from '/assets/shooterGame/boy0.png';
+
+const WIDTH = window.innerWidth < 450 ? window.innerWidth : 450;
+const HEIGHT = window.innerHeight < 800 ? window.innerHeight : 800;
+
+var joystickMoveVector = { x: 0, y: 0 };
+var cameraPosition = { x: 0, y: 0};
+
+var engine = null;
+var render = null;
+var ball = null;
+
+const updateCamera = () => {
+    Matter.Composite.translate(engine.world, {x: -cameraPosition.x + WIDTH / 2, y: -cameraPosition.y + HEIGHT / 2});
+}
+
+const matterUpdateTick = () => {
+    ball.position.x += joystickMoveVector.x * 5;
+    ball.position.y -= joystickMoveVector.y * 5;
+    cameraPosition = ball.position;
+    updateCamera();
+}
 
 export const modifyShooterGame = (state, ws, username, token) => {
 
@@ -13,14 +35,14 @@ export const modifyShooterGame = (state, ws, username, token) => {
             passive: false
         });
 
-        const WIDTH = window.innerWidth < 450 ? window.innerWidth : 450;
-        const HEIGHT = window.innerHeight < 800 ? window.innerHeight : 800;
+    
 
         // create an engine
-        var engine = Matter.Engine.create();
+        engine = Matter.Engine.create();
+        
 
         // create a renderer
-        var render = Matter.Render.create({
+        render = Matter.Render.create({
             element: document.getElementById("shooterGameCanvas"),
             engine: engine,
             options: {
@@ -32,17 +54,25 @@ export const modifyShooterGame = (state, ws, username, token) => {
         });
 
         // create a ball body
-        var ball = Matter.Bodies.circle(WIDTH / 2, 365, 45, {
-            isStatic: false,
+        ball = Matter.Bodies.circle(WIDTH / 2, 365, 45, {
+            isStatic: true,
             render: {
+                sprite: {
+                    texture: boyAsset,
+                    xScale: 90 / 720,
+                    yScale: 90 / 720
+                },
                 fillStyle: "#32a852"
             }
         });
-        var box = Matter.Bodies.rectangle(400, 200, 80, 80);
-        var ground = Matter.Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
+
+        var leftBorderWall = Matter.Bodies.rectangle(-500, 0, 30, 1000, { isStatic: true });
+        var rightBorderWall = Matter.Bodies.rectangle(500, 0, 30, 1000, { isStatic: true });
+        var topBorderWall = Matter.Bodies.rectangle(0, -500, 1000, 30, { isStatic: true });
+        var bottomBorderWall = Matter.Bodies.rectangle(0, 500, 1000, 30, { isStatic: true });
 
         // add all of the bodies to the world
-        Matter.Composite.add(engine.world, [ball, box, ground]);
+        Matter.Composite.add(engine.world, [ball, leftBorderWall, rightBorderWall, topBorderWall, bottomBorderWall]);
 
         // run the renderer
         Matter.Render.run(render);
@@ -52,6 +82,9 @@ export const modifyShooterGame = (state, ws, username, token) => {
 
         // run the engine
         Matter.Runner.run(runner, engine);
+
+        Matter.Events.on(engine, "beforeUpdate", matterUpdateTick);
+        setInterval(updateCamera, 1);
 
         // create the joystick inside the joystick div
         const joystick = NippleJS.create({
@@ -63,5 +96,14 @@ export const modifyShooterGame = (state, ws, username, token) => {
             },
             color: "white"
         });
+
+        joystick.on("move", (event, data) => {
+
+            joystickMoveVector = data.vector;
+        });
+
+        joystick.on("end", (event, data) => {
+            joystickMoveVector = { x: 0, y: 0 };
+        })
     }
 }
