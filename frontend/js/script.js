@@ -3,8 +3,8 @@ import { generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
-const HOST = '192.168.0.94';
-const PORT = 80;
+const HOST = import.meta.env.VITE_DEV_SERVER_HOST;
+const PORT = import.meta.env.VITE_DEV_SERVER_PORT;
 
 var currentPage = 'register';
 // Possible states:
