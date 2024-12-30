@@ -49,6 +49,7 @@
     min-height: 400px;
     pointer-events: none;
     user-select: none;
+    touch-action: none;
 }
 
 .userOnline {
