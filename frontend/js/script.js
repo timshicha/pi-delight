@@ -63,24 +63,28 @@ const wsOnMessage = (event) => {
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
-            currentPage = 'lobby';
+            currentPage = 'home';
+            modifyLobby();
             updatePage();
+            requestRefresh();
         }
     }
 
     else if(data.messageType === "validateUser") {
         if(data.error) {
             console.log(data.error);
+            currentPage = 'register';
+            updatePage();
         }
         else {
             console.log("Logged in.");
             username = data.username;
             token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
-            currentPage = 'lobby';
+            currentPage = 'home';
             // After user has been validated, request a refresh of data
-            requestRefresh();
             updatePage();
+            requestRefresh();
         }
     }
 
@@ -340,6 +344,8 @@ export const updatePage = (newPage = null) => {
     }
     // If home or lobby
     else {
+        // Show lobby element even if the user is at home because the lobby
+        // element is what allows users to join a lobby.
         document.getElementById("lobbyPage").style.display = "block";
         document.getElementById("navbar").style.display = "block";
         document.getElementById("navbarUsername").innerText = username;
@@ -348,6 +354,7 @@ export const updatePage = (newPage = null) => {
         if(currentPage === 'home') {
             document.getElementById("homePage").style.display = "block";
         }
+        // If lobby
         else {
             document.getElementById("homePage").style.display = "none";
         }
