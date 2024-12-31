@@ -303,6 +303,7 @@ const clearPages = () => {
     document.getElementById("homePage").style.display = "none";
     document.getElementById("lobbyPage").style.display = "none";
     document.getElementById("gamePage").style.display = "none";
+    document.getElementById("navbar").style.display = "none";
     lastUserListId = -1;
 }
 
@@ -332,6 +333,7 @@ export const updatePage = (newPage = null) => {
     // If home or lobby
     else {
         document.getElementById("lobbyPage").style.display = "block";
+        document.getElementById("navbar").style.display = "block";
         // If home, also show home stuff
         if(currentPage === 'home') {
             document.getElementById("homePage").style.display = "block";
