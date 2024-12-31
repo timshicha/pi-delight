@@ -432,7 +432,8 @@ const sendRefresh = (ws, res) => {
     if(!users[res.username].lobby) {
         ws.send(JSON.stringify({
             messageType: 'refresh',
-            inLobby: false
+            inLobby: false,
+            playerIcon: users[res.username].icon
         }));
         return;
     }

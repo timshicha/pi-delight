@@ -21,6 +21,7 @@ ws.ws.onmessage = (event) => wsOnMessage(event);
 
 var username;
 var token;
+var playerIcon = "grayPlayer";
 
 // Who the most recent invite is from
 var mostRecentInviteFrom = null;
@@ -109,6 +110,8 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'refresh') {
+        // Update icon
+        playerIcon = data.playerIcon;
         // If not in lobby
         if(!data.inLobby) {
             currentPage = 'home';
@@ -298,6 +301,11 @@ const declineInvite = () => {
     document.getElementById("inviteBox").style.display = 'none';
 }
 
+const updatePlayerIcon = () => {
+    document.getElementById("navbarPlayerIcon").src =
+        `/assets/playerIcons/${playerIcon}.png`;
+}
+
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
@@ -334,6 +342,8 @@ export const updatePage = (newPage = null) => {
     else {
         document.getElementById("lobbyPage").style.display = "block";
         document.getElementById("navbar").style.display = "block";
+        document.getElementById("navbarUsername").innerText = username;
+        updatePlayerIcon();
         // If home, also show home stuff
         if(currentPage === 'home') {
             document.getElementById("homePage").style.display = "block";
