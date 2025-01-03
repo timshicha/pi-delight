@@ -1,5 +1,5 @@
 import PiDelightSocket from "./PiDelightSocket.js";
-import { generateNoUsersHtml, generateUserHtml } from "./home.js";
+import { generateNavbarIcons, generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
@@ -37,6 +37,7 @@ var invited = [];
 var inGame = false;
 var playersInLobby = [];
 var currentGameType = null;
+var navbarExtended = false;
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -67,6 +68,7 @@ const wsOnMessage = (event) => {
             modifyLobby();
             updatePage();
             requestRefresh();
+            updateNavbarExtension();
         }
     }
 
@@ -85,6 +87,7 @@ const wsOnMessage = (event) => {
             // After user has been validated, request a refresh of data
             updatePage();
             requestRefresh();
+            updateNavbarExtension();
         }
     }
 
@@ -443,3 +446,29 @@ document.getElementById("startGameBtn").addEventListener('click', () => {
 document.getElementById("leaveGameBtn").onclick = () => {
     leaveGame(ws, username, token);
 }
+
+// Show or hide the extended navbar based on current navbar state
+const updateNavbar = () => {
+    if(navbarExtended) {
+        document.getElementById("navbarExtension").style.display = 'block';
+    }
+    else {
+        document.getElementById("navbarExtension").style.display = 'none';
+    }
+}
+
+// When the user clicks their player icon in the navbar, extend the
+// navbar down to allow them to change their icon. If the navbar is
+// already extended, collapse the extended navbar and keep the previous
+// icon.
+document.getElementById("navbarPlayerIcon").onclick = () => {
+    navbarExtended = !navbarExtended;
+    updateNavbar();
+};
+
+// Call this when the username and token are changed
+const updateNavbarExtension = () => {
+    // Generate icon buttons in the extended navbar
+    document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token));
+}
+updateNavbarExtension(username, token);

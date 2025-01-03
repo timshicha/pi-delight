@@ -415,6 +415,22 @@ wss.on('connection', (ws, req) => {
             users[res.username].lobby.makeMove(res.username, res.moveInfo);
             // Let others know the move result
         }
+
+        // If updating player icon
+        if(res.messageType === 'updateIcon') {
+            // Make sure it's a valid icon first
+            //
+            //
+            users[res.username].icon = res.icon;
+            // If they are in a lobby, send refresh to lobby
+            if(users[res.username].lobby) {
+                users[res.username].lobby.sendRefresh();
+            }
+            // If not in lobby, just send refresh to them
+            else {
+                sendRefresh(ws, res);
+            }
+        }
     });
 
     ws.on('close', () => {
