@@ -29,10 +29,14 @@ for (let i = 0; i < matchImagePaths.length; i++) {
     matchImagePaths[i] = pathToMatchImages + matchImagePaths[i];
 }
 
-export const playerIconPaths = [
+export const playerIcons = [
     'boy0',
     'girl0'
 ];
+
+export const iconToPath = (playerIcon) => {
+    return pathToPlayerIcons + playerIcon + ".png";
+}
 
 // Add path to each image
 // for (let i = 0; i < playerIconPaths.length; i++) {

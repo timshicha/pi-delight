@@ -1,4 +1,4 @@
-import { playerIconPaths } from "./imports/matchImports";
+import { iconToPath, playerIcons } from "./imports/matchImports";
 
 export const generateNoUsersHtml = () => {
     const element = document.createElement("p");
@@ -35,22 +35,23 @@ export const generateUserHtml = (username, status) => {
     return element;
 };
 
-export const generateNavbarIcons = (ws, username, token) => {
+export const generateNavbarIcons = (ws, username, token, closeNavbarFunction) => {
     const element = document.createElement("div");
     // For each player icon
     // Go backwards since it's float right (order backwards)
-    for (let i = playerIconPaths.length - 1; i >= 0; i--) {
+    for (let i = playerIcons.length - 1; i >= 0; i--) {
         let iconElement = document.createElement("input");
         iconElement.type = "image";
         iconElement.classList.add("navbarPlayerIcon");
-        iconElement.src = '/assets/playerIcons/' + playerIconPaths[i] + '.png';
+        iconElement.src = iconToPath(playerIcons[i]);
         iconElement.onclick = () => {
             ws.send(JSON.stringify({
                 messageType: "updateIcon",
                 username: username,
                 token: token,
-                icon: playerIconPaths[i]
-            }))
+                icon: playerIcons[i]
+            }));
+            closeNavbarFunction();
         }
         element.appendChild(iconElement);
     }

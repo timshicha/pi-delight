@@ -457,6 +457,11 @@ const updateNavbar = () => {
     }
 }
 
+const closeNavbar = () => {
+    navbarExtended = false;
+    updateNavbar();
+}
+
 // When the user clicks their player icon in the navbar, extend the
 // navbar down to allow them to change their icon. If the navbar is
 // already extended, collapse the extended navbar and keep the previous
@@ -469,6 +474,6 @@ document.getElementById("navbarPlayerIcon").onclick = () => {
 // Call this when the username and token are changed
 const updateNavbarExtension = () => {
     // Generate icon buttons in the extended navbar
-    document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token));
+    document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token, closeNavbar));
 }
 updateNavbarExtension(username, token);
