@@ -424,6 +424,7 @@ wss.on('connection', (ws, req) => {
             users[res.username].icon = res.icon;
             // If they are in a lobby, send refresh to lobby
             if(users[res.username].lobby) {
+                users[res.username].lobby.updatePlayerIcons();
                 users[res.username].lobby.sendRefresh();
             }
             // If not in lobby, just send refresh to them
