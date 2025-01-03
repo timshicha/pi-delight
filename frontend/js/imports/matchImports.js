@@ -31,7 +31,9 @@ for (let i = 0; i < matchImagePaths.length; i++) {
 
 export const playerIcons = [
     'boy0',
-    'girl0'
+    'boy1',
+    'girl0',
+    'girl1'
 ];
 
 export const iconToPath = (playerIcon) => {
