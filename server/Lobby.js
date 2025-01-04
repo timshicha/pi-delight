@@ -1,4 +1,4 @@
-import { MatchGame } from "./Games.js";
+import { MatchGame } from "./Games/Match.js";
 
 export class Lobby {
     constructor (users) {
