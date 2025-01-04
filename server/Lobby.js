@@ -99,7 +99,7 @@ export class Lobby {
                 messageType: 'results',
                 gameType: gameType,
                 data: this.data(),
-                playerIcon: this.players[username].icon
+                playerIcon: this.users[username].icon
             }));
         }
     }

@@ -68,6 +68,9 @@ export const showResults = (username, data, sort = true) => {
     }
 
     gameResultsDiv.style.display = 'block';
+
+    // Hide the leave game button
+    document.getElementById("leaveGameBtn").style.display = 'none';
 }
 
 // Close the results window and send user back to lobby
