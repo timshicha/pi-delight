@@ -299,7 +299,7 @@ export class MatchGame {
         this.turnPause = true;
         this.turnPauseID = setTimeout(() => {
             this.turnPause = false;
-            this.sendRefreshFunc();
+            this.RefreshFunc();
         }, MATCH_TURN_PAUSE * 1000);
     }
 }

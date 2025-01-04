@@ -1,3 +1,4 @@
+import { ShooterGame } from "./Games/ShooterGame.js";
 import { MatchGame } from "./Games/Match.js";
 
 export class Lobby {
@@ -64,6 +65,9 @@ export class Lobby {
         console.log("starting game");
         if(gameType === "Match") {
             this.game = new MatchGame(this.players, this.sendRefresh);
+        }
+        else if(gameType === "Shooter Game") {
+            this.game = new ShooterGame(this.players, this.sendRefresh);
         }
         this.sendRefresh(true);
     }

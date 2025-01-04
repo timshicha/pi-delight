@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="/css/lobby.css">
         <link rel="stylesheet" href="/css/game.css">
         <link rel="stylesheet" href="/css/match.css">
+        <link rel="stylesheet" href="/css/shooterGame.css">
         <script type="module" src="/js/script.js"></script>
     </head>
     <body>
@@ -46,7 +47,14 @@
                     </div>
                 </div>
                 <div id="shooterGameDiv">
-                    <p>Hello World!</p>
+                    <div id="shooterGameCanvas"></div>
+                    <div id="shooterGameHealthDiv">
+                        <div id="shooterGameHealthFillDiv"></div>
+                    </div>
+                    <button id="shooterGameShootButton">
+                        <img src="/assets/shooterGame/shootButton.svg" alt="Shoot Button">
+                    </button>
+                    <div id="shooterGameJoystickDiv"></div>
                 </div>
                 <div id="gameResultsDiv" class="gameResultsDiv roundedBox bigText">
                     Game Results
