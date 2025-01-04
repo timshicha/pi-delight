@@ -1,4 +1,5 @@
-const pathToImages = '/assets/match/';
+const pathToMatchImages = '/assets/match/';
+const pathToPlayerIcons = '/assets/playerIcons/';
 
 export const matchImagePaths = [
     'camel.svg',
@@ -25,5 +26,21 @@ export const matchImagePaths = [
 
 // Add path to each image
 for (let i = 0; i < matchImagePaths.length; i++) {
-    matchImagePaths[i] = pathToImages + matchImagePaths[i];
+    matchImagePaths[i] = pathToMatchImages + matchImagePaths[i];
 }
+
+export const playerIcons = [
+    'boy0',
+    'boy1',
+    'girl0',
+    'girl1'
+];
+
+export const iconToPath = (playerIcon) => {
+    return pathToPlayerIcons + playerIcon + ".png";
+}
+
+// Add path to each image
+// for (let i = 0; i < playerIconPaths.length; i++) {
+//     playerIconPaths[i] = pathToPlayerIcons + playerIconPaths[i];
+// }

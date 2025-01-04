@@ -1,5 +1,5 @@
 import PiDelightSocket from "./PiDelightSocket.js";
-import { generateNoUsersHtml, generateUserHtml } from "./home.js";
+import { generateNavbarIcons, generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
 
@@ -21,6 +21,7 @@ ws.ws.onmessage = (event) => wsOnMessage(event);
 
 var username;
 var token;
+var playerIcon = "grayPlayer";
 
 // Who the most recent invite is from
 var mostRecentInviteFrom = null;
@@ -36,6 +37,7 @@ var invited = [];
 var inGame = false;
 var playersInLobby = [];
 var currentGameType = null;
+var navbarExtended = false;
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -62,24 +64,30 @@ const wsOnMessage = (event) => {
             localStorage.setItem("username", data.username);
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
-            currentPage = 'lobby';
+            currentPage = 'home';
+            modifyLobby();
             updatePage();
+            requestRefresh();
+            updateNavbarExtension();
         }
     }
 
     else if(data.messageType === "validateUser") {
         if(data.error) {
             console.log(data.error);
+            currentPage = 'register';
+            updatePage();
         }
         else {
             console.log("Logged in.");
             username = data.username;
             token = localStorage.getItem("token");
             localStorage.setItem("loggedIn", true);
-            currentPage = 'lobby';
+            currentPage = 'home';
             // After user has been validated, request a refresh of data
-            requestRefresh();
             updatePage();
+            requestRefresh();
+            updateNavbarExtension();
         }
     }
 
@@ -109,6 +117,8 @@ const wsOnMessage = (event) => {
     }
 
     else if(data.messageType === 'refresh') {
+        // Update icon
+        playerIcon = data.playerIcon;
         // If not in lobby
         if(!data.inLobby) {
             currentPage = 'home';
@@ -298,11 +308,17 @@ const declineInvite = () => {
     document.getElementById("inviteBox").style.display = 'none';
 }
 
+const updatePlayerIcon = () => {
+    document.getElementById("navbarPlayerIcon").src =
+        `/assets/playerIcons/${playerIcon}.png`;
+}
+
 const clearPages = () => {
     document.getElementById("registerPage").style.display = "none";
     document.getElementById("homePage").style.display = "none";
     document.getElementById("lobbyPage").style.display = "none";
     document.getElementById("gamePage").style.display = "none";
+    document.getElementById("navbar").style.display = "none";
     lastUserListId = -1;
 }
 
@@ -333,11 +349,17 @@ export const updatePage = (newPage = null) => {
     }
     // If home or lobby
     else {
+        // Show lobby element even if the user is at home because the lobby
+        // element is what allows users to join a lobby.
         document.getElementById("lobbyPage").style.display = "block";
+        document.getElementById("navbar").style.display = "block";
+        document.getElementById("navbarUsername").innerText = username;
+        updatePlayerIcon();
         // If home, also show home stuff
         if(currentPage === 'home') {
             document.getElementById("homePage").style.display = "block";
         }
+        // If lobby
         else {
             document.getElementById("homePage").style.display = "none";
         }
@@ -426,3 +448,34 @@ document.getElementById("startGameBtn").addEventListener('click', () => {
 document.getElementById("leaveGameBtn").onclick = () => {
     leaveGame(ws, username, token);
 }
+
+// Show or hide the extended navbar based on current navbar state
+const updateNavbar = () => {
+    if(navbarExtended) {
+        document.getElementById("navbarExtension").style.display = 'block';
+    }
+    else {
+        document.getElementById("navbarExtension").style.display = 'none';
+    }
+}
+
+const closeNavbar = () => {
+    navbarExtended = false;
+    updateNavbar();
+}
+
+// When the user clicks their player icon in the navbar, extend the
+// navbar down to allow them to change their icon. If the navbar is
+// already extended, collapse the extended navbar and keep the previous
+// icon.
+document.getElementById("navbarPlayerIcon").onclick = () => {
+    navbarExtended = !navbarExtended;
+    updateNavbar();
+};
+
+// Call this when the username and token are changed
+const updateNavbarExtension = () => {
+    // Generate icon buttons in the extended navbar
+    document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token, closeNavbar));
+}
+updateNavbarExtension(username, token);

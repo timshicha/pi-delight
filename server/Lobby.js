@@ -94,14 +94,16 @@ export class Lobby {
             gameType: gameType,
             state: this.data(),
             invited: this.users[username].invited,
-            backToLobby: backToLobby
+            backToLobby: backToLobby,
+            playerIcon: this.users[username].icon
         }));
         // If game is over, send game over
         if(this.game && this.game.gameIsOver) {
             this.users[username].socket.send(JSON.stringify({
                 messageType: 'results',
                 gameType: gameType,
-                data: this.data()
+                data: this.data(),
+                playerIcon: this.users[username].icon
             }));
         }
     }
