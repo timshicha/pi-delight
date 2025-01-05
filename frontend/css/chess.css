@@ -5,16 +5,26 @@
 }
 
 #chessboard tr {
-
 }
 
 #chessboard td {
+    margin: 0px;
+    padding: 0px;
     width: 40px;
     height: 40px;
+    max-height: 40px;
     background-color: rgb(200, 200, 200);
+    position: relative;
 }
 
 #chessboard tr:nth-child(even) td:nth-child(odd),
 #chessboard tr:nth-child(odd) td:nth-child(even) {
     background-color: rgb(67, 166, 205);
+}
+
+.chessPieceImg {
+    position: absolute;
+    width: 38px;
+    left: 1px;
+    top: 0px;
 }
