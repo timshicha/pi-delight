@@ -45,15 +45,16 @@ export class ChessBoard {
         ];
         this.selectedSquare = null;
 
-        const chessboardElement = document.getElementById("chessboard");
+        this.chessboardElement = document.getElementById("chessboard");
         this.boardElements = Array(8);
         // Add each row to the chessboard
         for (let tr = 0; tr < 8; tr++) {
-            let children = chessboardElement.getElementsByTagName("tr")[tr];
+            let children = this.chessboardElement.getElementsByTagName("tr")[tr];
             this.boardElements[tr] = children.getElementsByTagName("td");
 
             // Add onclick for all cells
             for (let td = 0; td < 8; td++) {
+                this.boardElements[tr][td].replaceChildren(this.generateChessImgElement(this.board[tr][td]));
                 this.boardElements[tr][td].onclick = () => {
                     this.selectSquare({
                         row: tr,
@@ -65,11 +66,33 @@ export class ChessBoard {
         }
     }
 
-    generateChessImgElement = (piece, pos) => {
+    generateChessImgElement = (piece) => {
         const element = document.createElement("img");
-        element.src = "/assets/chess/" + piece + ".svg";
         element.classList.add("chessPieceImg");
+        if(piece) {
+            element.src = "/assets/chess/" + piece + ".svg";
+        }
+        else {
+            element.src = "/assets/chess/blank.svg";
+        }
         return element;
+    }
+
+    updateChessImgElement = (element, piece) => {
+        if(piece) {
+            element.src = "/assets/chess/" + piece + ".svg";
+        }
+        else {
+            element.src = "/assets/chess/blank.svg";
+        }
+        return element;
+    }
+
+    // Pass a piece and an image element to see if the correct piece is
+    // already shown.
+    // This is used to avoid rerendering cells that weren't changed.
+    cellMatchesImgElement = (piece, element) => {
+        return (element.src === "/assets/chess/" + piece + ".svg");
     }
 
     drawBoard = () => {        
@@ -78,16 +101,9 @@ export class ChessBoard {
             // For each square in the row
             for (let col = 0; col < 8; col++) {
                 let thisCell = this.board[row][col];
-                // If empty cell
-                if(!thisCell) {
-                    this.boardElements[row][col].replaceChildren();
-                }
-                // If something is in the cell
-                else {
-                    this.boardElements[row][col].replaceChildren(
-                        this.generateChessImgElement(thisCell, {row: row, col: col})
-                    );
-                }
+                this.updateChessImgElement(
+                    this.boardElements[row][col].children[0], thisCell
+                );
             }
         }
     }
