@@ -325,6 +325,7 @@ const clearPages = () => {
 const clearGames = () => {
     document.getElementById("matchDiv").style.display = "none";
     document.getElementById("shooterGameDiv").style.display = "none";
+    document.getElementById("chessDiv").style.display = "none";
 }
 
 export const updatePage = (newPage = null) => {
@@ -345,6 +346,10 @@ export const updatePage = (newPage = null) => {
         else if(currentGameType === "Shooter Game") {
             document.getElementById("shooterGameDiv").style.display = "block";
             document.getElementById("leaveGameBtn").style.display = "none";
+        }
+        else if(currentGameType === "Chess") {
+            document.getElementById("chessDiv").style.display = "block";
+            document.getElementById("leaveGameBtn").style.display = "block";
         }
     }
     // If home or lobby

@@ -51,13 +51,28 @@ export class ChessGame {
     constructor (players, sendRefreshFunc) {
         // Make sure there are exactly 2 players
         if(players.length != 2) {
+            // Specify that the game was not successfully created
+            this.success = false;
             return;
         }
         this.players = {}; // username: {}
         this.sendRefreshFunc = sendRefreshFunc;
+        this.gameType = "Chess";
 
         // Add the players
         this.players[players[0]] = {};
         this.players[players[1]] = {};
+        this.success = true;
+    }
+
+    getVisibleState = () => {
+        return {
+
+        };
+    }
+
+    removePlayer = (username) => {
+        console.log(this.players, username);
+        delete this.players[username];
     }
 }

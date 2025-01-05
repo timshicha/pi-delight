@@ -1,5 +1,6 @@
 import { ShooterGame } from "./Games/ShooterGame.js";
 import { MatchGame } from "./Games/Match.js";
+import { ChessGame } from "./Games/Chess.js";
 
 export class Lobby {
     constructor (users) {
@@ -68,6 +69,14 @@ export class Lobby {
         }
         else if(gameType === "Shooter Game") {
             this.game = new ShooterGame(this.players, this.sendRefresh);
+        }
+        else if(gameType === "Chess") {
+            this.game = new ChessGame(this.players, this.sendRefresh);
+            // Check to make sure game was started successfully
+            // * Bypass in development mode
+            // if(!this.game || !this.game.success) {
+            //     this.game = null;
+            // }
         }
         this.sendRefresh(true);
     }
