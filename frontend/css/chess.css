@@ -1,0 +1,20 @@
+
+#chessboard {
+    margin: 0px;
+    border-collapse: collapse;
+}
+
+#chessboard tr {
+
+}
+
+#chessboard td {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(200, 200, 200);
+}
+
+#chessboard tr:nth-child(even) td:nth-child(odd),
+#chessboard tr:nth-child(odd) td:nth-child(even) {
+    background-color: rgb(67, 166, 205);
+}
