@@ -7,6 +7,12 @@ const validatePosition = (pos) => {
     return (pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8);
 }
 
+const generateChessImgElement = (piece) => {
+    const element = document.createElement("img");
+    element.src = "/assets/chess/" + piece + ".svg";
+    return element;
+}
+
 const getKnightMoves = (pos) => {
     const moves = [
         {row: -2, col: 1},
@@ -31,17 +37,45 @@ const getKnightMoves = (pos) => {
 }
 
 
-class ChessBoard {
+export class ChessBoard {
     constructor () {
         this.board = [
+            ["blackRook", "blackKnight", "blackBishop", "blackQueen", "blackKing", "blackBishop", "blackKnight", "blackRook"],
+            ["blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn"],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null]
+            ["whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn"],
+            ["whiteRook", "whiteKnight", "whiteBishop", "whiteQueen", "whiteKing", "whiteBishop", "whiteKnight", "whiteRook"]
         ];
+
+        const chessboardElement = document.getElementById("chessboard");
+        this.boardElements = Array(8);
+        // Add each row to the chessboard
+        for (let tr = 0; tr < 8; tr++) {
+            let children = chessboardElement.getElementsByTagName("tr")[tr];
+            this.boardElements[tr] = children.getElementsByTagName("td");
+        }
+        console.log(this.boardElements);
+    }
+
+    drawBoard = () => {        
+        // For each row on the board
+        for (let row = 0; row < 8; row++) {
+            // For each square in the row
+            for (let col = 0; col < 8; col++) {
+                let thisCell = this.board[row][col];
+                // If empty cell
+                if(!thisCell) {
+                    this.boardElements[row][col].replaceChildren();
+                }
+                else {
+                    this.boardElements[row][col].replaceChildren(
+                        generateChessImgElement(thisCell)
+                    );
+                }
+            }
+        }
     }
 }

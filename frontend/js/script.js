@@ -2,6 +2,7 @@ import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNavbarIcons, generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
+import { ChessBoard } from "./chess.js";
 
 const HOST = import.meta.env.VITE_DEV_SERVER_HOST;
 const PORT = import.meta.env.VITE_DEV_SERVER_PORT;
@@ -484,3 +485,6 @@ const updateNavbarExtension = () => {
     document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token, closeNavbar));
 }
 updateNavbarExtension(username, token);
+
+let chess = new ChessBoard();
+chess.drawBoard();
