@@ -1,6 +1,9 @@
 // Sum two 2-D arrays: [1,4] + [3, 5] = [4, 9]
 const sumArrays = (pos1, pos2) => {
-    return [pos1.row + pos2.row, pos1.col + pos2.col];
+    return {
+        row: pos1.row + pos2.row,
+        col: pos1.col + pos2.col
+    };
 }
 // See if the coordinates are a valid chess position (values are between 0 and 7)
 const validatePosition = (pos) => {
@@ -30,6 +33,15 @@ const getKnightMoves = (pos) => {
     return newMoves;
 }
 
+// See if a position exists in an array
+const inArray = (array, pos) => {
+    for (let i = 0; i < array.length; i++) {
+        if(array[i].row == pos.row && array[i].col == pos.col) {
+            return true;
+        }
+    }
+    return false;
+}
 
 export class ChessBoard {
     constructor () {
@@ -128,14 +140,32 @@ export class ChessBoard {
         const previousPos = this.selectedSquare;
         console.log("Selected square:", pos.row, pos.col);
 
-        this.movePiece(previousPos, pos);
-        this.selectedSquare = null;
+        // If valid move, move and unselect move
+        if(this.movePiece(previousPos, pos)) {
+            this.selectedSquare = null;
+        }
         return;
     }
 
+    // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
-        this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
-        this.board[pos1.row][pos1.col] = null;
-        this.drawBoard();
+        let piece = this.board[pos1.row][pos1.col];
+        let validMove = false;
+        if(piece === "whiteKnight" || piece === "blackKnight") {
+            console.log("knight attempt");
+            if(inArray(getKnightMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        else {
+            validMove = true;
+        }
+        if(validMove) {
+            this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
+            this.board[pos1.row][pos1.col] = null;
+            this.drawBoard();
+            return true;
+        }
+        return false;
     }
 }
