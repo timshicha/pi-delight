@@ -146,6 +146,85 @@ export class ChessBoard {
         return;
     }
 
+    // Get the squares a bishop can move to
+    getBishopMoves = (pos) => {
+        const validMoves = [];
+        const currentPiece = this.board[pos.row][pos.col];
+        // Up-right moves
+        for (let offset = 1; validatePosition({row: pos.row - offset, col: pos.col + offset}); offset++) {
+            console.log("evaluating bishop", pos.row - offset, pos.col + offset);
+            // If there's a piece in the new square
+            const newSquare = this.board[pos.row - offset][pos.col + offset];
+            if(newSquare) {
+                // If different colors, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row - offset, col: pos.col + offset});
+                }
+                // Skip the rest (prevent from jumping over pieces)
+                break;
+            }
+            // Otherwise add the move
+            else {
+                validMoves.push({row: pos.row - offset, col: pos.col + offset});
+            }
+        }
+        // Down-right moves
+        for (let offset = 1; validatePosition({row: pos.row + offset, col: pos.col + offset}); offset++) {
+            console.log("evaluating bishop", pos.row + offset, pos.col + offset);
+            // If there's a piece in the new square
+            const newSquare = this.board[pos.row + offset][pos.col + offset];
+            if(newSquare) {
+                // If different colors, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row + offset, col: pos.col + offset});
+                }
+                // Skip the rest (prevent from jumping over pieces)
+                break;
+            }
+            // Otherwise add the move
+            else {
+                validMoves.push({row: pos.row + offset, col: pos.col + offset});
+            }
+        }
+        // Down-left moves
+        for (let offset = 1; validatePosition({row: pos.row + offset, col: pos.col - offset}); offset++) {
+            console.log("evaluating bishop", pos.row + offset, pos.col - offset);
+            // If there's a piece in the new square
+            const newSquare = this.board[pos.row + offset][pos.col - offset];
+            if(newSquare) {
+                // If different colors, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row + offset, col: pos.col - offset});
+                }
+                // Skip the rest (prevent from jumping over pieces)
+                break;
+            }
+            // Otherwise add the move
+            else {
+                validMoves.push({row: pos.row + offset, col: pos.col - offset});
+            }
+        }
+        // Up-left moves
+        for (let offset = 1; validatePosition({row: pos.row - offset, col: pos.col - offset}); offset++) {
+            console.log("evaluating bishop", pos.row - offset, pos.col - offset);
+            // If there's a piece in the new square
+            const newSquare = this.board[pos.row - offset][pos.col - offset];
+            if(newSquare) {
+                // If different colors, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row - offset, col: pos.col - offset});
+                }
+                // Skip the rest (prevent from jumping over pieces)
+                break;
+            }
+            // Otherwise add the move
+            else {
+                validMoves.push({row: pos.row - offset, col: pos.col - offset});
+            }
+        }
+        return validMoves;
+    }
+
     // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
@@ -153,6 +232,12 @@ export class ChessBoard {
         if(piece.type === "knight") {
             console.log("knight attempt");
             if(inArray(getKnightMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        if(piece.type === "bishop") {
+            console.log("bishop attempt");
+            if(inArray(this.getBishopMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
