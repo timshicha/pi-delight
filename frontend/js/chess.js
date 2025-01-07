@@ -46,14 +46,14 @@ const inArray = (array, pos) => {
 export class ChessBoard {
     constructor () {
         this.board = [
-            ["blackRook", "blackKnight", "blackBishop", "blackQueen", "blackKing", "blackBishop", "blackKnight", "blackRook"],
-            ["blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn", "blackPawn"],
+            [{color: "black", type: "rook"}, {color: "black", type: "knight"}, {color: "black", type: "bishop"}, {color: "black", type: "queen"}, {color: "black", type: "king"}, {color: "black", type: "bishop"}, {color: "black", type: "knight"}, {color: "black", type: "rook"}],
+            [{color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
-            ["whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn", "whitePawn"],
-            ["whiteRook", "whiteKnight", "whiteBishop", "whiteQueen", "whiteKing", "whiteBishop", "whiteKnight", "whiteRook"]
+            [{color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}],
+            [{color: "white", type: "rook"}, {color: "white", type: "knight"}, {color: "white", type: "bishop"}, {color: "white", type: "queen"}, {color: "white", type: "king"}, {color: "white", type: "bishop"}, {color: "white", type: "knight"}, {color: "white", type: "rook"}]
         ];
         this.selectedSquare = null;
 
@@ -82,7 +82,7 @@ export class ChessBoard {
         const element = document.createElement("img");
         element.classList.add("chessPieceImg");
         if(piece) {
-            element.src = "/assets/chess/" + piece + ".svg";
+            element.src = "/assets/chess/" + piece + piece.type + ".svg";
         }
         else {
             element.src = "/assets/chess/blank.svg";
@@ -92,7 +92,7 @@ export class ChessBoard {
 
     updateChessImgElement = (element, piece) => {
         if(piece) {
-            element.src = "/assets/chess/" + piece + ".svg";
+            element.src = "/assets/chess/" + piece.color + piece.type + ".svg";
         }
         else {
             element.src = "/assets/chess/blank.svg";
@@ -140,10 +140,9 @@ export class ChessBoard {
         const previousPos = this.selectedSquare;
         console.log("Selected square:", pos.row, pos.col);
 
-        // If valid move, move and unselect move
-        if(this.movePiece(previousPos, pos)) {
-            this.selectedSquare = null;
-        }
+        // Moves only if move is valid
+        this.movePiece(previousPos, pos);
+        this.selectedSquare = null;
         return;
     }
 
@@ -151,7 +150,7 @@ export class ChessBoard {
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
         let validMove = false;
-        if(piece === "whiteKnight" || piece === "blackKnight") {
+        if(piece.type === "knight") {
             console.log("knight attempt");
             if(inArray(getKnightMoves(pos1), pos2)) {
                 validMove = true;
@@ -160,7 +159,10 @@ export class ChessBoard {
         else {
             validMove = true;
         }
-        if(validMove) {
+        // Make sure move is valid and there's no same color piece there
+        if(validMove && (!this.board[pos2.row][pos2.col] ||
+            this.board[pos1.row][pos1.col].color !== this.board[pos2.row][pos2.col].color)
+        ) {
             this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
             this.board[pos1.row][pos1.col] = null;
             this.drawBoard();
