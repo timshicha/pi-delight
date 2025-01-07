@@ -10,29 +10,6 @@ const validatePosition = (pos) => {
     return (pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8);
 }
 
-const getKnightMoves = (pos) => {
-    const moves = [
-        {row: -2, col: 1},
-        {row: -1, col: 2},
-        {row: 1, col: 2},
-        {row: 2, col: 1},
-        {row: 2, col: -2},
-        {row: 1, col: -2},
-        {row: -1, col: -2},
-        {row: -2, col: -1}
-    ];
-    // Add the valid moves
-    let newMoves = [];
-    for (let i = 0; i < moves.length; i++) {
-        let newMove = sumArrays(pos, moves[i]);
-        // If it's a valid position on the chessboard, add it
-        if(validatePosition(newMove)) {
-            newMoves.push(newMove);
-        }
-    }
-    return newMoves;
-}
-
 // See if a position exists in an array
 const inArray = (array, pos) => {
     for (let i = 0; i < array.length; i++) {
@@ -146,6 +123,32 @@ export class ChessBoard {
         return;
     }
 
+    getKnightMoves = (pos) => {
+        const moves = [
+            {row: -2, col: 1},
+            {row: -1, col: 2},
+            {row: 1, col: 2},
+            {row: 2, col: 1},
+            {row: 2, col: -1},
+            {row: 1, col: -2},
+            {row: -1, col: -2},
+            {row: -2, col: -1}
+        ];
+        // Add the valid moves
+        const currentPiece = this.board[pos.row][pos.col];
+        let newMoves = [];
+        for (let i = 0; i < moves.length; i++) {
+            let newMove = sumArrays(pos, moves[i]);
+            // If it's a valid position on the chessboard and not
+            // of the same color, add it
+            if(validatePosition(newMove) &&
+                (!this.board[newMove.row][newMove.col] || (this.board[newMove.row][newMove.col].color !== currentPiece.color))) {
+                newMoves.push(newMove);
+            }
+        }
+        return newMoves;
+    }
+
     // Get the squares a bishop can move to
     getBishopMoves = (pos) => {
         const validMoves = [];
@@ -231,11 +234,11 @@ export class ChessBoard {
         let validMove = false;
         if(piece.type === "knight") {
             console.log("knight attempt");
-            if(inArray(getKnightMoves(pos1), pos2)) {
+            if(inArray(this.getKnightMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
-        if(piece.type === "bishop") {
+        else if(piece.type === "bishop") {
             console.log("bishop attempt");
             if(inArray(this.getBishopMoves(pos1), pos2)) {
                 validMove = true;
@@ -245,9 +248,7 @@ export class ChessBoard {
             validMove = true;
         }
         // Make sure move is valid and there's no same color piece there
-        if(validMove && (!this.board[pos2.row][pos2.col] ||
-            this.board[pos1.row][pos1.col].color !== this.board[pos2.row][pos2.col].color)
-        ) {
+        if(validMove) {
             this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
             this.board[pos1.row][pos1.col] = null;
             this.drawBoard();
