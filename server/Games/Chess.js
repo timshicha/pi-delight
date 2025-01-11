@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Sum two 2-D arrays: [1,4] + [3, 5] = [4, 9]
 const sumArrays = (pos1, pos2) => {
@@ -49,8 +52,8 @@ class ChessBoard {
 
 export class ChessGame {
     constructor (players, sendRefreshFunc) {
-        // Make sure there are exactly 2 players
-        if(players.length != 2) {
+        // Make sure there are exactly 2 players (in production)
+        if(process.env.NODE_ENV === 'PROD' && players.length != 2) {
             // Specify that the game was not successfully created
             this.success = false;
             return;
@@ -72,6 +75,9 @@ export class ChessGame {
     }
 
     removePlayer = (username) => {
+        if(!username) {
+            return;
+        }
         console.log(this.players, username);
         delete this.players[username];
     }

@@ -72,11 +72,10 @@ export class Lobby {
         }
         else if(gameType === "Chess") {
             this.game = new ChessGame(this.players, this.sendRefresh);
-            // Check to make sure game was started successfully
-            // * Bypass in development mode
-            // if(!this.game || !this.game.success) {
-            //     this.game = null;
-            // }
+        }
+        // Check to make sure game was started successfully
+        if(!this.game || !this.game.success) {
+            this.game = null;
         }
         this.sendRefresh(true);
     }

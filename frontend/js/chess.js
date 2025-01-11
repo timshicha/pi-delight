@@ -228,6 +228,71 @@ export class ChessBoard {
         return validMoves;
     }
 
+    getRookMoves = (pos) => {
+        const validMoves = [];
+        const currentPiece = this.board[pos.row][pos.col];
+        // Moves up
+        for (let row = pos.row - 1; row >= 0; row--) {
+            const newSquare = this.board[row][pos.col];
+            // If there's a piece here
+            if(newSquare) {
+                // If other color, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: row, col: pos.col});
+                }
+                // Since we hit a piece, stop the loop
+                break;
+            }
+            else {
+                validMoves.push({row: row, col: pos.col});
+            }
+        }
+        // Moves to the right
+        for (let col = pos.col + 1; col < 8; col++) {
+            const newSquare = this.board[pos.row][col];
+            // If there's a piece here
+            if(newSquare) {
+                // If other color, include it
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row, col: col});
+                }
+                break;
+            }
+            else {
+                validMoves.push({row: pos.row, col: col});
+            }
+        }
+        // Moves down
+        for (let row = pos.row + 1; row < 8; row++) {
+            const newSquare = this.board[row][pos.col];
+            // If there's a piece here
+            if(newSquare) {
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: row, col: pos.col});
+                }
+                break;
+            }
+            else {
+                validMoves.push({row: row, col: pos.col});
+            }
+        }
+        // Moves to the left
+        for (let col = pos.col - 1; col >= 0; col--) {
+            const newSquare = this.board[pos.row][col];
+            // If there's a piece here
+            if(newSquare) {
+                if(newSquare.color !== currentPiece.color) {
+                    validMoves.push({row: pos.row, col: col});
+                }
+                break;
+            }
+            else {
+                validMoves.push({row: pos.row, col: col});
+            }
+        }
+        return validMoves;
+    }
+
     // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
@@ -241,6 +306,12 @@ export class ChessBoard {
         else if(piece.type === "bishop") {
             console.log("bishop attempt");
             if(inArray(this.getBishopMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        else if(piece.type === "rook") {
+            console.log("rook attempt");
+            if(inArray(this.getRookMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
