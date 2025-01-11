@@ -293,6 +293,13 @@ export class ChessBoard {
         return validMoves;
     }
 
+    getQueenMoves = (pos) => {
+        // A queen is a bishop + rook
+        const validBishopMoves = this.getBishopMoves(pos);
+        const validRookMoves = this.getRookMoves(pos);
+        return validBishopMoves.concat(validRookMoves);
+    }
+
     // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
@@ -312,6 +319,12 @@ export class ChessBoard {
         else if(piece.type === "rook") {
             console.log("rook attempt");
             if(inArray(this.getRookMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        else if(piece.type === "queen") {
+            console.log("queen attempt");
+            if(inArray(this.getQueenMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
