@@ -300,6 +300,32 @@ export class ChessBoard {
         return validBishopMoves.concat(validRookMoves);
     }
 
+    getKingMoves = (pos) => {
+        const moves = [
+            {row: -1, col: 0},
+            {row: -1, col: 1},
+            {row: 0, col: 1},
+            {row: 1, col: 1},
+            {row: 1, col: 0},
+            {row: 1, col: -1},
+            {row: 0, col: -1},
+            {row: -1, col: -1}
+        ];
+        // Add the valid moves
+        const currentPiece = this.board[pos.row][pos.col];
+        let newMoves = [];
+        for (let i = 0; i < moves.length; i++) {
+            let newMove = sumArrays(pos, moves[i]);
+            // If it's a valid position on the chessboard and not
+            // of the same color, add it
+            if(validatePosition(newMove) &&
+                (!this.board[newMove.row][newMove.col] || (this.board[newMove.row][newMove.col].color !== currentPiece.color))) {
+                newMoves.push(newMove);
+            }
+        }
+        return newMoves;
+    }
+
     // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
@@ -325,6 +351,12 @@ export class ChessBoard {
         else if(piece.type === "queen") {
             console.log("queen attempt");
             if(inArray(this.getQueenMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        else if(piece.type === "king") {
+            console.log("king attempt");
+            if(inArray(this.getKingMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
