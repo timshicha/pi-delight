@@ -326,6 +326,57 @@ export class ChessBoard {
         return newMoves;
     }
 
+    getPawnMoves = (pos) => {
+        const validMoves = [];
+        // Color matters for pawn moves
+        // Black pawns move toward the bottom of the board
+        // White pawns move toward the top of the board
+        // Color coefficient (-1 for black, 1 for white)
+        const currentPiece = this.board[pos.row][pos.col];
+        let ca = -1;
+        if(currentPiece.color === "white") {
+            ca = 1;
+        }
+
+        // If on last row, return
+        if(currentPiece.color === "white" && pos.row === 0) {
+            return [];
+        }
+        else if(currentPiece.color === "white" && pos.row === 7) {
+            return [];
+        }
+
+        // If square ahead is empty
+        if(!this.board[pos.row - 1 * ca][pos.col]) {
+            validMoves.push({row: pos.row - 1 * ca, col: pos.col})
+        }
+
+        // If pawn hasn't been moved, allow two moves ahead
+        if((currentPiece.color === "white" && pos.row === 6) ||
+            (currentPiece.color === "black" && pos.row === 1)) {
+            // Make sure both squares ahead are empty
+            if(!this.board[pos.row - 1 * ca][pos.col] &&
+                !this.board[pos.row - 2 * ca][pos.col]) {
+                    validMoves.push({row: pos.row - 2 * ca, col: pos.col});
+                }
+        }
+
+
+        // If there's an opposite color piece diagonally ahead (capture)
+        let diagonalPiece;
+        // Diagonal left
+        diagonalPiece = this.board[pos.row - 1 * ca][pos.col - 1];
+        if(diagonalPiece && diagonalPiece.color !== currentPiece.color) {
+            validMoves.push({row: pos.row - 1 * ca, col: pos.col - 1})
+        }
+        // Diagonal right
+        diagonalPiece = this.board[pos.row - 1 * ca][pos.col + 1];
+        if(diagonalPiece && diagonalPiece.color !== currentPiece.color) {
+            validMoves.push({row: pos.row - 1 * ca, col: pos.col + 1})
+        }
+        return validMoves;
+    }
+
     // If it's a knight, make sure new square is valid
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
@@ -357,6 +408,12 @@ export class ChessBoard {
         else if(piece.type === "king") {
             console.log("king attempt");
             if(inArray(this.getKingMoves(pos1), pos2)) {
+                validMove = true;
+            }
+        }
+        else if(piece.type === "pawn") {
+            console.log("pawn attempt");
+            if(inArray(this.getPawnMoves(pos1), pos2)) {
                 validMove = true;
             }
         }
