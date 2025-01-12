@@ -34,6 +34,20 @@ export class ChessBoard {
         ];
         this.selectedSquare = null;
 
+        // Keep track of king and rook movements for castling
+        this.kingMoved = {
+            "white": false,
+            "black": false
+        };
+        this.leftRookMoved = {
+            "white": false,
+            "black": false
+        };
+        this.rightRookMoved = {
+            "white": false,
+            "black": false
+        };
+
         this.chessboardElement = document.getElementById("chessboard");
         this.boardElements = Array(8);
         // Add each row to the chessboard
@@ -313,17 +327,37 @@ export class ChessBoard {
         ];
         // Add the valid moves
         const currentPiece = this.board[pos.row][pos.col];
-        let newMoves = [];
+        let validMoves = [];
         for (let i = 0; i < moves.length; i++) {
             let newMove = sumArrays(pos, moves[i]);
             // If it's a valid position on the chessboard and not
             // of the same color, add it
             if(validatePosition(newMove) &&
                 (!this.board[newMove.row][newMove.col] || (this.board[newMove.row][newMove.col].color !== currentPiece.color))) {
-                newMoves.push(newMove);
+                validMoves.push(newMove);
             }
         }
-        return newMoves;
+
+        // If the king hasn't moved, consider castle moves
+        if(!this.kingMoved[currentPiece.color]) {
+            // If left rook hasn't moved and there are no pieces
+            // in between, allow left castle
+            if(!this.leftRookMoved[currentPiece.color] &&
+                !this.board[pos.row][1] &&
+                !this.board[pos.row][2] &&
+                !this.board[pos.row][3]) {
+                validMoves.push({row: pos.row, col: 2});
+            }
+            // If right rook hasn't moved and there are no pieces
+            // in between, allow right castle
+            if(!this.rightRookMoved[currentPiece.color] &&
+                !this.board[pos.row][5] &&
+                !this.board[pos.row][6]) {
+                validMoves.push({row: pos.row, col: 6});
+            }
+        }
+
+        return validMoves;
     }
 
     getPawnMoves = (pos) => {
@@ -381,6 +415,7 @@ export class ChessBoard {
     movePiece = (pos1, pos2) => {
         let piece = this.board[pos1.row][pos1.col];
         let validMove = false;
+        let kingMove = false;
         if(piece.type === "knight") {
             console.log("knight attempt");
             if(inArray(this.getKnightMoves(pos1), pos2)) {
@@ -406,9 +441,12 @@ export class ChessBoard {
             }
         }
         else if(piece.type === "king") {
+            kingMove = true;
             console.log("king attempt");
             if(inArray(this.getKingMoves(pos1), pos2)) {
                 validMove = true;
+                // Note that king has moved (prevent future castling)
+                this.kingMoved[piece.color] = true;
             }
         }
         else if(piece.type === "pawn") {
@@ -422,6 +460,47 @@ export class ChessBoard {
         }
         // Make sure move is valid and there's no same color piece there
         if(validMove) {
+            // If either pos1 or pos2 is in a corner, prevent future
+            // castling with that rook
+            if((pos1.row === 0 && pos1.col === 0) || (pos2.row === 0 && pos2.col === 0)) {
+                this.leftRookMoved["black"] = true;
+            }
+            else if((pos1.row === 0 && pos1.col === 7) || (pos2.row === 0 && pos2.col === 7)) {
+                this.rightRookMoved["black"] = true;
+            }
+            else if((pos1.row === 7 && pos1.col === 0) || (pos2.row === 7 && pos2.col === 0)) {
+                this.leftRookMoved["white"] = true;
+            }
+            else if((pos1.row === 7 && pos1.col === 7) || (pos2.row === 7 && pos2.col === 7)) {
+                this.leftRookMoved["white"] = true;
+            }
+
+            // If a king move, see if it's a castle move
+            if(kingMove) {
+                // If castle move, move rook as well
+                if(Math.abs(pos1.col - pos2.col) === 2) {
+                    // Black left castle
+                    if(pos2.row === 0 && pos2.col === 2) {
+                        this.board[0][3] = this.board[0][0];
+                        this.board[0][0] = null;
+                    }
+                    // Black right castle
+                    else if(pos2.row === 0 && pos2.col === 6) {
+                        this.board[0][5] = this.board[0][7];
+                        this.board[0][7] = null;
+                    }
+                    // White left castle
+                    else if(pos2.row === 7 && pos2.col === 2) {
+                        this.board[7][3] = this.board[7][0];
+                        this.board[7][0] = null;
+                    }
+                    // White right castle
+                    else if(pos2.row === 7 && pos2.col === 6) {
+                        this.board[7][5] = this.board[7][7];
+                        this.board[7][7] = null;
+                    }
+                }
+            }
             this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
             this.board[pos1.row][pos1.col] = null;
             this.drawBoard();
