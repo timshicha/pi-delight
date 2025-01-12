@@ -48,6 +48,17 @@ export class ChessBoard {
             "black": false
         };
 
+        this.prevMove = {
+            pawnDouble: false,
+            color: "white",
+            pos: {
+                row: 0,
+                col: 0
+            }
+        };
+
+        this.elPassant = false;
+
         this.chessboardElement = document.getElementById("chessboard");
         this.boardElements = Array(8);
         // Add each row to the chessboard
@@ -408,6 +419,23 @@ export class ChessBoard {
         if(diagonalPiece && diagonalPiece.color !== currentPiece.color) {
             validMoves.push({row: pos.row - 1 * ca, col: pos.col + 1})
         }
+
+        // Check special move: el passant
+        // See if an opponent moved their pawn forward 2
+        if(this.prevMove.pawnDouble) {
+            // If this pawn is in the same row
+            if(this.prevMove.pos.row === pos.row) {
+                // If to the left
+                if(this.prevMove.pos.col === pos.col - 1) {
+                    validMoves.push({row: pos.row - 1 * ca, col: pos.col - 1});
+                }
+                // If to the right
+                else if(this.prevMove.pos.col === pos.col + 1) {
+                    validMoves.push({row: pos.row - 1 * ca, col: pos.col + 1});
+                }
+            }
+        }
+        console.log(validMoves);
         return validMoves;
     }
 
@@ -475,6 +503,24 @@ export class ChessBoard {
                 this.leftRookMoved["white"] = true;
             }
 
+            // If pawn moved forward 2
+            if(piece.type === "pawn" && Math.abs(pos2.row - pos1.row) == 2) {
+                this.prevMove.pawnDouble = true;
+                this.prevMove.color = piece.color;
+                this.prevMove.pos = pos2;
+            }
+            else {
+                this.prevMove.pawnDouble = false;
+            }
+
+            // If el passant move.
+            // It's an el passant move if it's a pawn that changed columns and
+            // jumped on a square that did not have a piece.
+            if(piece.type === "pawn" && pos1.col !== pos2.col && !this.board[pos2.row][pos2.col]) {
+                // Capture piece
+                this.board[pos1.row][pos2.col] = null;
+            }
+
             // If a king move, see if it's a castle move
             if(kingMove) {
                 // If castle move, move rook as well
@@ -504,6 +550,7 @@ export class ChessBoard {
             this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
             this.board[pos1.row][pos1.col] = null;
             this.drawBoard();
+            console.log(this.prevMove);
             return true;
         }
         return false;
