@@ -77,14 +77,8 @@ export class ChessBoard {
 
         this.turn = "white";
 
-        this.prevMove = {
-            pawnDouble: false,
-            color: "white",
-            pos: {
-                row: 0,
-                col: 0
-            }
-        };
+        // If a pawn dashes forward 2, record its column
+        this.pawnDash = null;
 
         this.elPassant = false;
 
@@ -210,6 +204,14 @@ export class ChessBoard {
             toRow: pos.row,
             toCol: pos.col
         })) {
+            // If pawn dash, record (for en passant possibility)
+            if(this.board[previousPos.row][previousPos.col].type === "pawn" &&
+                Math.abs(pos.row - previousPos.row) === 2) {
+                    this.pawnDash = pos.col;
+            }
+            else {
+                this.pawnDash = null;
+            }
             this.board[pos.row][pos.col] = this.board[previousPos.row][previousPos.col];
             this.board[previousPos.row][previousPos.col] = null;
             this.drawBoard();
@@ -486,6 +488,26 @@ export class ChessBoard {
                             toRow: row + d,
                             toCol: col + 1
                         });
+                    }
+
+                    // If double dash, check for en passant
+                    if(this.pawnDash !== null) {
+                        if(color === "white" && row === 3 && Math.abs(this.pawnDash - col) === 1) {
+                            validMoves.push({
+                                fromRow: row,
+                                fromCol: col,
+                                toRow: 2,
+                                toCol: this.pawnDash
+                            });
+                        }
+                        if(color === "black" && row === 4 && Math.abs(this.pawnDash - col) === 1) {
+                            validMoves.push({
+                                fromRow: row,
+                                fromCol: col,
+                                toRow: 5,
+                                toCol: this.pawnDash
+                            });
+                        }
                     }
                 }
             }
