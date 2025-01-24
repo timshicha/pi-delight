@@ -2,6 +2,7 @@ import PiDelightSocket from "./PiDelightSocket.js";
 import { generateNavbarIcons, generateNoUsersHtml, generateUserHtml } from "./home.js";
 import { modifyLobby, modifyInvitePlayersList, modifyLobbyButtons, showLobby, hideLobby } from "./lobby.js";
 import { clearGame, closeResults, modifyGame, leaveGame } from "./game.js";
+import { ChessBoard } from "./chess.js";
 
 const HOST = import.meta.env.VITE_DEV_SERVER_HOST;
 const PORT = import.meta.env.VITE_DEV_SERVER_PORT;
@@ -325,6 +326,7 @@ const clearPages = () => {
 const clearGames = () => {
     document.getElementById("matchDiv").style.display = "none";
     document.getElementById("shooterGameDiv").style.display = "none";
+    document.getElementById("chessDiv").style.display = "none";
 }
 
 export const updatePage = (newPage = null) => {
@@ -345,6 +347,10 @@ export const updatePage = (newPage = null) => {
         else if(currentGameType === "Shooter Game") {
             document.getElementById("shooterGameDiv").style.display = "block";
             document.getElementById("leaveGameBtn").style.display = "none";
+        }
+        else if(currentGameType === "Chess") {
+            document.getElementById("chessDiv").style.display = "block";
+            document.getElementById("leaveGameBtn").style.display = "block";
         }
     }
     // If home or lobby
@@ -479,3 +485,6 @@ const updateNavbarExtension = () => {
     document.getElementById("navbarExtension").replaceChildren(generateNavbarIcons(ws, username, token, closeNavbar));
 }
 updateNavbarExtension(username, token);
+
+let chess = new ChessBoard();
+chess.drawBoard();

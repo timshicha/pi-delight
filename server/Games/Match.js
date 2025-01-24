@@ -1,5 +1,5 @@
 
-const MATCH_SETS = 3; // How many sets of cards there are
+const MATCH_SETS = 8; // How many sets of cards there are
 const MATCH_TIME = 5; // How many seconds the player has to make a move
 const MATCH_CARDS = 20; // How many different match cards the FE has
 const MATCH_TURN_PAUSE = 1; // How many seconds to pause for between turns
@@ -18,8 +18,10 @@ const shuffleArray = (array) => {
 
 export class MatchGame {
     constructor (players, sendRefreshFunc) {
-        if(players.length < 1) return; // Minimum of 1 players
-        if(players.length > 4) return; // Maxinum of 4 players
+        if(players.length < 1 || players.length > 4) {
+            this.success = false;
+            return;
+        }
         this.gameType = "Match";
         this.admin = null;
         this.players = {}; // username: {matches: 0, gender: 'boy'}
@@ -54,6 +56,7 @@ export class MatchGame {
         this.admin = players[0];
         this.playerOrder = players;
         this.playerCount = players.length;
+        this.success = true;
         this.startGame();
         console.log("game started");
     }

@@ -14,6 +14,7 @@
         <link rel="stylesheet" href="/css/game.css">
         <link rel="stylesheet" href="/css/match.css">
         <link rel="stylesheet" href="/css/shooterGame.css">
+        <link rel="stylesheet" href="/css/chess.css">
         <script type="module" src="/js/script.js"></script>
     </head>
     <body>
@@ -56,6 +57,155 @@
                     </button>
                     <div id="shooterGameJoystickDiv"></div>
                 </div>
+                <div id="chessDiv" class="chessDiv">
+                    <p>Chess</p>
+                    <table id="chessboard">
+                        <tr>
+                            <td>
+                                <img src="/assets/chess/blackRook.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackKnight.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackBishop.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackQueen.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackKing.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackBishop.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackKnight.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackRook.svg">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/blackPawn.svg">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whitePawn.svg">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="/assets/chess/whiteRook.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteKnight.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteBishop.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteQueen.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteKing.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteBishop.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteKnight.svg">
+                            </td>
+                            <td>
+                                <img src="/assets/chess/whiteRook.svg">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
                 <div id="gameResultsDiv" class="gameResultsDiv roundedBox bigText">
                     Game Results
                     <div id="playerResultContainer">
@@ -95,6 +245,7 @@
                             <select name="game" id="gameSelectDropdown" class="promptBtn gameSelectDropdown">
                                 <option value="Match">Match</option>
                                 <option value="Shooter Game">Shooter Game</option>
+                                <option value="Chess">Chess</option>
                             </select>
                             <button id="startGameBtn" class="promptBtn startGameBtn">Start Game</button>
                         </div>

@@ -10,8 +10,6 @@ const TEST_USERNAMES = ['Tim', 'Frank', 'Joe', 'Bob', 'Luke'];
 const HOST = process.env.VITE_DEV_SERVER_HOST
 const PORT = process.env.VITE_DEV_SERVER_PORT || 80;
 const INVITE_TIMEOUT = process.env.INVITE_TIMEOUT || 20000; // Allow invite to same player every 20 seconds
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const wss = new WebSocketServer({
     port: PORT,
