@@ -1,20 +1,11 @@
+import { bishopDownLeftOffsets, bishopDownRightOffsets, bishopUpLeftOffsets, bishopUpRightOffsets, kingOffsets, knightOffsets, pawnAttackOffsets, rookDownOffsets, rookLeftOffets, rookRightOffsets, rookUpOffsets } from "./chessOffsets";
+
 // Sum two 2-D arrays: [1,4] + [3, 5] = [4, 9]
 const sumArrays = (pos1, pos2) => {
     return {
         row: pos1.row + pos2.row,
         col: pos1.col + pos2.col
     };
-}
-// See if the coordinates are a valid chess position (values are between 0 and 7)
-const validatePosition = (pos) => {
-    return (pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8);
-}
-const validatePositionWithOffset = (pos, rowChange, colChange) => {
-    const newPos = {
-        row: pos.row + rowChange,
-        col: pos.col + colChange
-    };
-    return validatePosition(newPos);
 }
 
 // See if a position exists in an array
@@ -25,6 +16,58 @@ const inArray = (array, pos) => {
         }
     }
     return false;
+}
+
+class ChessBoardSnapshot {
+    constructor (chessboardObject) {
+
+        // Copy the chessboard
+        this.board = Array(8);
+        for(let i = 0; i < 8; i++) {
+            this.board[i] = Array(8);
+            for (let j = 0; j < 8; j++) {
+            this.board[i][j] = chessboardObject.board[i][j];
+            }
+        }
+
+        // Copy the variables
+        this.kingMoved = {
+            "white": chessboardObject.kingMoved["white"],
+            "black": chessboardObject.kingMoved["black"]
+        };
+        this.leftRookMoved = {
+            "white": chessboardObject.leftRookMoved["white"],
+            "black": chessboardObject.leftRookMoved["black"]
+        };
+        this.rightRookMoved = {
+            "white": chessboardObject.rightRookMoved["white"],
+            "black": chessboardObject.rightRookMoved["black"]
+        };
+
+        this.turn = chessboardObject.turn;
+
+        this.prevMove = {
+            pawnDouble: chessboardObject.prevMove.pawnDouble,
+            color: chessboardObject.prevMove.color,
+            pos: {
+                row: chessboardObject.prevMove.pos.row,
+                col: chessboardObject.prevMove.pos.col
+            }
+        };
+
+        this.elPassant = chessboardObject.elPassant;
+    }
+
+    revert = (chessboardObject) => {
+        chessboardObject.board = this.board;
+        chessboardObject.kingMoved = this.kingMoved;
+        chessboardObject.leftRookMoved = this.leftRookMoved;
+        chessboardObject.rightRookMoved = this.rightRookMoved;
+        chessboardObject.kingPos = this.kingPos;
+        chessboardObject.turn = this.turn;
+        chessboardObject.prevMove = this.prevMove;
+        chessboardObject.elPassant = this.elPassant;
+    }
 }
 
 export class ChessBoard {
@@ -40,6 +83,7 @@ export class ChessBoard {
             [{color: "white", type: "rook"}, {color: "white", type: "knight"}, {color: "white", type: "bishop"}, {color: "white", type: "queen"}, {color: "white", type: "king"}, {color: "white", type: "bishop"}, {color: "white", type: "knight"}, {color: "white", type: "rook"}]
         ];
         this.selectedSquare = null;
+        this.moveHistory = [];
 
         // Keep track of king and rook movements for castling
         this.kingMoved = {
@@ -53,11 +97,6 @@ export class ChessBoard {
         this.rightRookMoved = {
             "white": false,
             "black": false
-        };
-        
-        this.kingPos = {
-            "white": {row: 7, col: 4},
-            "black": {row: 0, col: 4}
         };
 
         this.turn = "white";
@@ -99,6 +138,21 @@ export class ChessBoard {
             return "white";
         }
         return "black";
+    }
+
+    getKingPosition = (color) => {
+        for (let row = 0; row < 8; row++) {
+            for(let col = 0; col < 8; col++) {
+                const piece = this.board[row][col];
+                if(piece && piece.type === "king" && piece.color === color) {
+                    return {
+                        row: row,
+                        col: col
+                    };
+                }
+            }
+        }
+        return null;
     }
 
     generateChessImgElement = (piece) => {
@@ -164,9 +218,19 @@ export class ChessBoard {
         console.log("Selected square:", pos.row, pos.col);
 
         // Moves only if move is valid
-        this.movePiece(previousPos, pos);
+        this.move(previousPos, pos);
         this.selectedSquare = null;
         return;
+    }
+
+    move = (previousPos, pos) => {
+        this.board[pos.row][pos.col] = this.board[previousPos.row][previousPos.col];
+        this.board[previousPos.row][previousPos.col] = null;
+        this.drawBoard();
+        this.swapTurn();
+        if(this.isInCheck(this.turn)) {
+            console.log(this.turn + " is in CHECK");
+        }
     }
 
     swapTurn = () => {
@@ -178,584 +242,201 @@ export class ChessBoard {
         }
     }
 
-    getKnightMoves = (pos) => {
-        const moves = [
-            {row: -2, col: 1},
-            {row: -1, col: 2},
-            {row: 1, col: 2},
-            {row: 2, col: 1},
-            {row: 2, col: -1},
-            {row: 1, col: -2},
-            {row: -1, col: -2},
-            {row: -2, col: -1}
-        ];
-        // Add the valid moves
-        const currentPiece = this.board[pos.row][pos.col];
-        let newMoves = [];
-        for (let i = 0; i < moves.length; i++) {
-            let newMove = sumArrays(pos, moves[i]);
-            // If it's a valid position on the chessboard
-            if(validatePosition(newMove)) {
-                newMoves.push(newMove);
-            }
-        }
-        return newMoves;
+    // Return true if the position is on the chessboard
+    isValid = (pos) => {
+        return (pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8);
     }
 
-    // Get the squares a bishop can move to
-    getBishopMoves = (pos) => {
-        const validMoves = [];
-        const currentPiece = this.board[pos.row][pos.col];
-        // Up-right moves
-        for (let offset = 1; validatePosition({row: pos.row - offset, col: pos.col + offset}); offset++) {
-            console.log("evaluating bishop", pos.row - offset, pos.col + offset);
-            // If there's a piece in the new square
-            const newSquare = this.board[pos.row - offset][pos.col + offset];
-            if(newSquare) {
-                // If different colors, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row - offset, col: pos.col + offset});
-                }
-                // Skip the rest (prevent from jumping over pieces)
-                break;
-            }
-            // Otherwise add the move
-            else {
-                validMoves.push({row: pos.row - offset, col: pos.col + offset});
-            }
-        }
-        // Down-right moves
-        for (let offset = 1; validatePosition({row: pos.row + offset, col: pos.col + offset}); offset++) {
-            console.log("evaluating bishop", pos.row + offset, pos.col + offset);
-            // If there's a piece in the new square
-            const newSquare = this.board[pos.row + offset][pos.col + offset];
-            if(newSquare) {
-                // If different colors, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row + offset, col: pos.col + offset});
-                }
-                // Skip the rest (prevent from jumping over pieces)
-                break;
-            }
-            // Otherwise add the move
-            else {
-                validMoves.push({row: pos.row + offset, col: pos.col + offset});
-            }
-        }
-        // Down-left moves
-        for (let offset = 1; validatePosition({row: pos.row + offset, col: pos.col - offset}); offset++) {
-            console.log("evaluating bishop", pos.row + offset, pos.col - offset);
-            // If there's a piece in the new square
-            const newSquare = this.board[pos.row + offset][pos.col - offset];
-            if(newSquare) {
-                // If different colors, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row + offset, col: pos.col - offset});
-                }
-                // Skip the rest (prevent from jumping over pieces)
-                break;
-            }
-            // Otherwise add the move
-            else {
-                validMoves.push({row: pos.row + offset, col: pos.col - offset});
-            }
-        }
-        // Up-left moves
-        for (let offset = 1; validatePosition({row: pos.row - offset, col: pos.col - offset}); offset++) {
-            console.log("evaluating bishop", pos.row - offset, pos.col - offset);
-            // If there's a piece in the new square
-            const newSquare = this.board[pos.row - offset][pos.col - offset];
-            if(newSquare) {
-                // If different colors, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row - offset, col: pos.col - offset});
-                }
-                // Skip the rest (prevent from jumping over pieces)
-                break;
-            }
-            // Otherwise add the move
-            else {
-                validMoves.push({row: pos.row - offset, col: pos.col - offset});
-            }
-        }
-        return validMoves;
+    isValidWithOffset = (pos, rowChange, colChange) => {
+        const newPos = {
+            row: pos.row + rowChange,
+            col: pos.col + colChange
+        };
+        return this.isValid(newPos);
     }
 
-    getRookMoves = (pos) => {
-        const validMoves = [];
-        const currentPiece = this.board[pos.row][pos.col];
-        // Moves up
-        for (let row = pos.row - 1; row >= 0; row--) {
-            const newSquare = this.board[row][pos.col];
-            // If there's a piece here
-            if(newSquare) {
-                // If other color, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: row, col: pos.col});
-                }
-                // Since we hit a piece, stop the loop
-                break;
-            }
-            else {
-                validMoves.push({row: row, col: pos.col});
-            }
-        }
-        // Moves to the right
-        for (let col = pos.col + 1; col < 8; col++) {
-            const newSquare = this.board[pos.row][col];
-            // If there's a piece here
-            if(newSquare) {
-                // If other color, include it
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row, col: col});
-                }
-                break;
-            }
-            else {
-                validMoves.push({row: pos.row, col: col});
-            }
-        }
-        // Moves down
-        for (let row = pos.row + 1; row < 8; row++) {
-            const newSquare = this.board[row][pos.col];
-            // If there's a piece here
-            if(newSquare) {
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: row, col: pos.col});
-                }
-                break;
-            }
-            else {
-                validMoves.push({row: row, col: pos.col});
-            }
-        }
-        // Moves to the left
-        for (let col = pos.col - 1; col >= 0; col--) {
-            const newSquare = this.board[pos.row][col];
-            // If there's a piece here
-            if(newSquare) {
-                if(newSquare.color !== currentPiece.color) {
-                    validMoves.push({row: pos.row, col: col});
-                }
-                break;
-            }
-            else {
-                validMoves.push({row: pos.row, col: col});
-            }
-        }
-        return validMoves;
+    isValidCoords = (row, col) => {
+        return (row >= 0 && row < 8 && col >= 0 && col < 8);
     }
 
-    getQueenMoves = (pos) => {
-        // A queen is a bishop + rook
-        const validBishopMoves = this.getBishopMoves(pos);
-        const validRookMoves = this.getRookMoves(pos);
-        return validBishopMoves.concat(validRookMoves);
+    // Return piece or null
+    // If position is outside of chessboard, return undefined
+    getPiece = (pos) => {
+        if(pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8) {
+            return this.board[pos.row][pos.col];
+        }
+        return undefined;
+    }
+    
+    // Return piece or null
+    // If position is outside of chessboard, return undefined
+    getPieceWithOffset = (pos, rowChange, colChange) => {
+        const newPos = {
+            row: pos.row + rowChange,
+            col: pos.col + colChange
+        };
+        return this.validatePosition(newPos);
     }
 
-    getKingMoves = (pos) => {
-        const moves = [
-            {row: -1, col: 0},
-            {row: -1, col: 1},
-            {row: 0, col: 1},
-            {row: 1, col: 1},
-            {row: 1, col: 0},
-            {row: 1, col: -1},
-            {row: 0, col: -1},
-            {row: -1, col: -1}
-        ];
-        // Add the valid moves
-        const currentPiece = this.board[pos.row][pos.col];
-        let validMoves = [];
-        for (let i = 0; i < moves.length; i++) {
-            let newMove = sumArrays(pos, moves[i]);
-            // If it's a valid position on the chessboard
-            if(validatePosition(newMove)) {
-                validMoves.push(newMove);
-            }
-        }
-
-        // If the king hasn't moved, consider castle moves
-        if(currentPiece && !this.kingMoved[currentPiece.color]) {
-            // If left rook hasn't moved and there are no pieces
-            // in between, allow left castle
-            if(!this.leftRookMoved[currentPiece.color] &&
-                !this.board[pos.row][1] &&
-                !this.board[pos.row][2] &&
-                !this.board[pos.row][3]) {
-                validMoves.push({row: pos.row, col: 2});
-            }
-            // If right rook hasn't moved and there are no pieces
-            // in between, allow right castle
-            if(!this.rightRookMoved[currentPiece.color] &&
-                !this.board[pos.row][5] &&
-                !this.board[pos.row][6]) {
-                validMoves.push({row: pos.row, col: 6});
-            }
-        }
-
-        return validMoves;
+    getPieceWithCoords = (row, col) => {
+        return this.getPiece({
+            row: row,
+            col: col
+        });
     }
 
-    getPawnMoves = (pos) => {
-        const validMoves = [];
-        // Color matters for pawn moves
-        // Black pawns move toward the bottom of the board
-        // White pawns move toward the top of the board
-        // Color coefficient (-1 for black, 1 for white)
-        const currentPiece = this.board[pos.row][pos.col];
-        let ca = -1;
-        if(currentPiece.color === "white") {
-            ca = 1;
-        }
+    // Get valid attacks by color
+    // Returns what pieces are attacking what squares (even if they are pinned)
+    getAttackingSquares = (color) => {
+        const attacks = [];
 
-        // If on last row, return
-        if(currentPiece.color === "white" && pos.row === 0) {
-            return [];
-        }
-        else if(currentPiece.color === "white" && pos.row === 7) {
-            return [];
-        }
+        // Go through each square on the board to look for pieces
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                let piece = this.board[row][col];
 
-        // If square ahead is empty
-        if(!this.board[pos.row - 1 * ca][pos.col]) {
-            validMoves.push({row: pos.row - 1 * ca, col: pos.col})
-        }
+                // If there's a piece and it's of this color
+                if(piece && piece.color === color) {
+                    // See what squares it is attacking
 
-        // If pawn hasn't been moved, allow two moves ahead
-        if((currentPiece.color === "white" && pos.row === 6) ||
-            (currentPiece.color === "black" && pos.row === 1)) {
-            // Make sure both squares ahead are empty
-            if(!this.board[pos.row - 1 * ca][pos.col] &&
-                !this.board[pos.row - 2 * ca][pos.col]) {
-                    validMoves.push({row: pos.row - 2 * ca, col: pos.col});
-                }
-        }
-
-
-        // If there's an opposite color piece diagonally ahead (capture)
-        let diagonalPiece;
-        // Diagonal left
-        diagonalPiece = this.board[pos.row - 1 * ca][pos.col - 1];
-        if(diagonalPiece && diagonalPiece.color !== currentPiece.color) {
-            validMoves.push({row: pos.row - 1 * ca, col: pos.col - 1})
-        }
-        // Diagonal right
-        diagonalPiece = this.board[pos.row - 1 * ca][pos.col + 1];
-        if(diagonalPiece && diagonalPiece.color !== currentPiece.color) {
-            validMoves.push({row: pos.row - 1 * ca, col: pos.col + 1})
-        }
-
-        // Check special move: el passant
-        // See if an opponent moved their pawn forward 2
-        if(this.prevMove.pawnDouble) {
-            // If this pawn is in the same row
-            if(this.prevMove.pos.row === pos.row) {
-                // If to the left
-                if(this.prevMove.pos.col === pos.col - 1) {
-                    validMoves.push({row: pos.row - 1 * ca, col: pos.col - 1});
-                }
-                // If to the right
-                else if(this.prevMove.pos.col === pos.col + 1) {
-                    validMoves.push({row: pos.row - 1 * ca, col: pos.col + 1});
-                }
-            }
-        }
-        console.log(validMoves);
-        return validMoves;
-    }
-
-    // Determine if a square is under attack by player of 'color'
-    isUnderAttack = (pos, color) => {
-        
-        let piece = null;
-        // CHECK PAWN ATTACKS
-        // Black pawns attack from row - 1
-        // White pawns attack from row + 1
-        let rowIncrease = -1;
-        if(color === "white") {
-            rowIncrease = 1;
-        }
-        // If top left is valid square
-        if(validatePositionWithOffset(pos, rowIncrease, -1)) {
-            piece = this.board[pos.row + rowIncrease][pos.col - 1];
-            if(piece && piece.type === "pawn" && piece.color === color) {
-                return true;
-            }
-        }
-        // If top right is valid square
-        if(validatePositionWithOffset(pos, rowIncrease, 1)) {
-            piece = this.board[pos.row + rowIncrease][pos.col + 1];
-            if(piece && piece.type === "pawn" && piece.color === color) {
-                return true;
-            }
-        }
-
-        // CHECK KNIGHT ATTACKS
-        const knightMoves = this.getKnightMoves(pos);
-        // For each of the knight moves, check is there's a knight
-        for (let i = 0; i < knightMoves.length; i++) {
-            piece = this.board[knightMoves[i].row][knightMoves[i].col];
-            if(piece && piece.type === "knight" && piece.color === color) {
-                return true;
-            }
-        }
-
-        // CHECK ATTACKS FROM ABOVE
-        for (let row = pos.row - 1; row >= 0; row--) {
-            piece = this.board[row][pos.col];
-            // If it's a queen or rook
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "rook")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM RIGHT
-        for (let col = pos.col + 1; col < 8; col++) {
-            piece = this.board[pos.row][col];
-            // If it's a queen or rook
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "rook")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM BELOW
-        for (let row = pos.row + 1; row < 8; row++) {
-            piece = this.board[row][pos.col];
-            // If it's a queen or rook
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "rook")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM LEFT
-        for (let col = pos.col - 1; col >= 0; col--) {
-            piece = this.board[pos.row][col];
-            // If it's a queen or rook
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "rook")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-
-        // CHECK ATTACKS FROM TOP-RIGHT
-        for (let i = 1; validatePositionWithOffset(pos, -i, i); i++) {
-            piece = this.board[pos.row - i][pos.col + i];
-            // If it's a queen or bishop
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "bishop")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM BOTTOM-RIGHT
-        for (let i = 1; validatePositionWithOffset(pos, i, i); i++) {
-            piece = this.board[pos.row + i][pos.col + i];
-            // If it's a queen or bishop
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "bishop")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM BOTTOM-LEFT
-        for (let i = 1; validatePositionWithOffset(pos, i, -i); i++) {
-            piece = this.board[pos.row + i][pos.col - i];
-            // If it's a queen or bishop
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "bishop")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-        // CHECK ATTACKS FROM TOP-LEFT
-        for (let i = 1; validatePositionWithOffset(pos, -i, -i); i++) {
-            piece = this.board[pos.row - i][pos.col - i];
-            // If it's a queen or bishop
-            if(piece && piece.color === color &&
-                (piece.type === "queen" || piece.type === "bishop")) {
-                return true;
-            }
-            // If there's a different piece, break
-            if(piece) {
-                break;
-            }
-        }
-
-        // CHECK ATTACKS FROM KING
-        const kingMoves = this.getKingMoves(pos);
-        // For each king move, determine if the opposite king is there
-        for (let i = 0; i < kingMoves.length; i++) {
-            piece = this.board[kingMoves[i].row][kingMoves[i].col];
-            if(piece && piece.type === "king" && piece.color === color) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // See if a king is in check
-    detectCheck = (color) => {
-
-    }
-
-    movePiece = (pos1, pos2) => {
-        // Check for turn
-        let piece = this.board[pos1.row][pos1.col];
-        if(!piece || piece.color !== this.turn) {
-            return false;
-        }
-        let validMove = false;
-        let kingMove = false;
-        if(piece.type === "knight") {
-            console.log("knight attempt");
-            if(inArray(this.getKnightMoves(pos1), pos2)) {
-                validMove = true;
-            }
-        }
-        else if(piece.type === "bishop") {
-            console.log("bishop attempt");
-            if(inArray(this.getBishopMoves(pos1), pos2)) {
-                validMove = true;
-            }
-        }
-        else if(piece.type === "rook") {
-            console.log("rook attempt");
-            if(inArray(this.getRookMoves(pos1), pos2)) {
-                validMove = true;
-            }
-        }
-        else if(piece.type === "queen") {
-            console.log("queen attempt");
-            if(inArray(this.getQueenMoves(pos1), pos2)) {
-                validMove = true;
-            }
-        }
-        else if(piece.type === "king") {
-            kingMove = true;
-            console.log("king attempt");
-            if(inArray(this.getKingMoves(pos1), pos2)) {
-                // If king moved to a square that's under attack
-                if(this.isUnderAttack(pos2, this.getOppositeColor(this.turn))) {
-                    validMove = false;
-                }
-                else {
-                    validMove = true;
-                }
-            }
-        }
-        else if(piece.type === "pawn") {
-            console.log("pawn attempt");
-            if(inArray(this.getPawnMoves(pos1), pos2)) {
-                validMove = true;
-            }
-        }
-        else {
-            validMove = true;
-        }
-        // Make sure move is valid and there's no same color piece there
-        if(validMove) {
-            // Make sure own king was not put into check
-
-            // If either pos1 or pos2 is in a corner, prevent future
-            // castling with that rook
-            if((pos1.row === 0 && pos1.col === 0) || (pos2.row === 0 && pos2.col === 0)) {
-                this.leftRookMoved["black"] = true;
-            }
-            else if((pos1.row === 0 && pos1.col === 7) || (pos2.row === 0 && pos2.col === 7)) {
-                this.rightRookMoved["black"] = true;
-            }
-            else if((pos1.row === 7 && pos1.col === 0) || (pos2.row === 7 && pos2.col === 0)) {
-                this.leftRookMoved["white"] = true;
-            }
-            else if((pos1.row === 7 && pos1.col === 7) || (pos2.row === 7 && pos2.col === 7)) {
-                this.leftRookMoved["white"] = true;
-            }
-
-            // If either pos1 or pos2 is in king's square, prevent future castling
-            if((pos1.row === 0 && pos1.col === 4) || (pos2.row === 0 && pos2.col === 4)) {
-                this.kingMoved["white"] = true;
-            }
-            else if((pos1.row === 7 && pos1.col === 4) || (pos2.row === 7 && pos2.col === 4)) {
-                this.kingMoved["black"] = true;
-            }
-
-            // If pawn moved forward 2
-            if(piece.type === "pawn" && Math.abs(pos2.row - pos1.row) == 2) {
-                this.prevMove.pawnDouble = true;
-                this.prevMove.color = piece.color;
-                this.prevMove.pos = pos2;
-            }
-            else {
-                this.prevMove.pawnDouble = false;
-            }
-
-            // If el passant move.
-            // It's an el passant move if it's a pawn that changed columns and
-            // jumped on a square that did not have a piece.
-            if(piece.type === "pawn" && pos1.col !== pos2.col && !this.board[pos2.row][pos2.col]) {
-                // Capture piece
-                this.board[pos1.row][pos2.col] = null;
-            }
-
-            // If a king move, see if it's a castle move
-            if(kingMove) {
-                // If castle move, move rook as well
-                if(Math.abs(pos1.col - pos2.col) === 2) {
-                    // Black left castle
-                    if(pos2.row === 0 && pos2.col === 2) {
-                        this.board[0][3] = this.board[0][0];
-                        this.board[0][0] = null;
+                    // If it's a pawn
+                    if(piece.type === "pawn") {
+                        for (let i = 0; i < pawnAttackOffsets[color].length; i++) {
+                            const rowOffset = pawnAttackOffsets[color][i].row;
+                            const colOffset = pawnAttackOffsets[color][i].col;
+                            if(this.isValidCoords(row + rowOffset, col + colOffset)) {
+                                attacks.push({
+                                    fromRow: row,
+                                    fromCol: col,
+                                    toRow: row + rowOffset,
+                                    toCol: col + colOffset
+                                });
+                            }
+                        }
                     }
-                    // Black right castle
-                    else if(pos2.row === 0 && pos2.col === 6) {
-                        this.board[0][5] = this.board[0][7];
-                        this.board[0][7] = null;
+
+                    // If it's a knight
+                    if(piece.type === "knight") {
+                        for (let i = 0; i < knightOffsets.length; i++) {
+                            const rowOffset = knightOffsets[i].row;
+                            const colOffset = knightOffsets[i].col;
+                            if(this.isValidCoords(row + rowOffset, col + colOffset)) {
+                                attacks.push({
+                                    fromRow: row,
+                                    fromCol: col,
+                                    toRow: row + rowOffset,
+                                    toCol: col + colOffset
+                                });
+                            }
+                        }
                     }
-                    // White left castle
-                    else if(pos2.row === 7 && pos2.col === 2) {
-                        this.board[7][3] = this.board[7][0];
-                        this.board[7][0] = null;
+
+                    // If it's a bishop or queen
+                    if(piece.type === "bishop" || piece.type === "queen") {
+                        const directions = [
+                            bishopUpRightOffsets,
+                            bishopDownRightOffsets,
+                            bishopDownLeftOffsets,
+                            bishopUpLeftOffsets
+                        ];
+                        // For each bishop direction
+                        for (let i = 0; i < directions.length; i++) {
+                            // For each square in this direction
+                            for (let j = 0; j < directions[i].length; j++) {
+                                const rowOffset = directions[i][j].row;
+                                const colOffset = directions[i][j].col;
+                                const result = this.getPieceWithCoords(row + rowOffset, col + colOffset);
+                                // If we reached the end of the board
+                                if(result === undefined) {
+                                    break;
+                                }
+                                // If we are still on the board
+                                else {
+                                    attacks.push({
+                                        fromRow: row,
+                                        fromCol: col,
+                                        toRow: row + rowOffset,
+                                        toCol: col + colOffset
+                                    });
+                                    // If we hit a piece
+                                    if(result) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
-                    // White right castle
-                    else if(pos2.row === 7 && pos2.col === 6) {
-                        this.board[7][5] = this.board[7][7];
-                        this.board[7][7] = null;
+
+                    // If it's a rook or queen
+                    if(piece.type === "rook" || piece.type === "queen") {
+                        const directions = [
+                            rookUpOffsets,
+                            rookDownOffsets,
+                            rookLeftOffets,
+                            rookRightOffsets
+                        ];
+                        // For each rook direction
+                        for (let i = 0; i < directions.length; i++) {
+                            // For each square in this direction
+                            for (let j = 0; j < directions[i].length; j++) {
+                                const rowOffset = directions[i][j].row;
+                                const colOffset = directions[i][j].col;
+                                const result = this.getPieceWithCoords(row + rowOffset, col + colOffset);
+                                // If we reached the end of the board
+                                if(result === undefined) {
+                                    break;
+                                }
+                                // If we are still on the board
+                                else {
+                                    attacks.push({
+                                        fromRow: row,
+                                        fromCol: col,
+                                        toRow: row + rowOffset,
+                                        toCol: col + colOffset
+                                    });
+                                    // If we hit a piece
+                                    if(result) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // If it's the king
+                    if(piece.type === "king") {
+                        for (let i = 0; i < kingOffsets.length; i++) {
+                            const rowOffset = kingOffsets[i].row;
+                            const colOffset = kingOffsets[i].col;
+                            if(this.isValidCoords(row + rowOffset, col + colOffset)) {
+                                attacks.push({
+                                    fromRow: row,
+                                    fromCol: col,
+                                    toRow: row + rowOffset,
+                                    toCol: col + colOffset
+                                });
+                            }
+                        }
                     }
                 }
             }
-            this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
-            this.board[pos1.row][pos1.col] = null;
-            this.swapTurn();
-            this.drawBoard();
-            console.log(this.prevMove);
-            return true;
+        }
+        return attacks;
+    }
+
+    // Determine if the king of 'color' is check
+    isInCheck = (color) => {
+        const attackerColor = this.getOppositeColor(color);
+
+        // Go through all squares that are under attack. Is any of them
+        // the king?
+        const kingPosition = this.getKingPosition(color);
+        const attacks = this.getAttackingSquares(attackerColor);
+        for (let i = 0; i < attacks.length; i++) {
+            if(kingPosition.row === attacks[i].toRow &&
+                kingPosition.col === attacks[i].toCol) {
+                return true;
+            }
         }
         return false;
     }
