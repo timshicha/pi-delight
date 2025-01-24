@@ -275,7 +275,7 @@ export class ChessBoard {
 
     // Get valid attacks by color
     // Returns what pieces are attacking what squares (even if they are pinned)
-    getAttackingSquares = (color) => {
+    getAttackingSquares = (color, includePawnAttacks=true) => {
         const attacks = [];
 
         // Go through each square on the board to look for pieces
@@ -288,7 +288,7 @@ export class ChessBoard {
                     // See what squares it is attacking
 
                     // If it's a pawn
-                    if(piece.type === "pawn") {
+                    if(piece.type === "pawn" && includePawnAttacks) {
                         for (let i = 0; i < pawnAttackOffsets[color].length; i++) {
                             const rowOffset = pawnAttackOffsets[color][i].row;
                             const colOffset = pawnAttackOffsets[color][i].col;
@@ -433,9 +433,72 @@ export class ChessBoard {
         return false;
     }
 
+    getValidPawnMoves = (color) => {
+        const validMoves = [];
+        // Depending on color, the direction of the pawns changes
+        let d = -1;
+        if(color === "black") {
+            d = 1;
+        }
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                let piece = this.board[row][col];
+                if(piece && piece.type === "pawn" && piece.color === color) {
+                    const oneAhead = this.getPieceWithCoords(row + d, col);
+                    // Only add if there's a square ahead an it's empty
+                    if(oneAhead === null) {
+                        validMoves.push({
+                            fromRow: row,
+                            fromCol: col,
+                            toRow: row + d,
+                            toCol: col
+                        });
+                        const twoAhead = this.getPieceWithCoords(row + 2 * d, col);
+                        // If pawn is still in original row
+                        if(((color === "white" && row === 6) ||
+                            (color === "black" && row === 1)) &&
+                            twoAhead === null) {
+                            validMoves.push({
+                                fromRow: row,
+                                fromCol: col,
+                                toRow: row + 2 * d,
+                                toCol: col
+                            });
+                        }
+                    }
+
+                    // Add the capture moves
+                    const leftCapturePiece = this.getPieceWithCoords(row + d, col - 1);
+                    const rightCapturePiece = this.getPieceWithCoords(row + d, col + 1);
+                    // If there's a piece and it's of the opposite color, allow capture
+                    if(leftCapturePiece) {
+                        validMoves.push({
+                            fromRow: row,
+                            fromCol: col,
+                            toRow: row + d,
+                            toCol: col - 1
+                        });
+                    }
+                    if(rightCapturePiece) {
+                        validMoves.push({
+                            fromRow: row,
+                            fromCol: col,
+                            toRow: row + d,
+                            toCol: col + 1
+                        });
+                    }
+                }
+            }
+        }
+        return validMoves;
+    }
+
     // Get the valid MOVES
     getValidMoves = (color = this.turn) => {
-        const validMoves = this.getAttackingSquares(color);
+        let  validMoves = this.getAttackingSquares(color, false);
+        validMoves = validMoves.concat(this.getValidPawnMoves(color));
+
+        console.log(validMoves);
 
         // If the new location is the same color piece, make it invalid
         for (let i = validMoves.length - 1; i >= 0; i--) {
