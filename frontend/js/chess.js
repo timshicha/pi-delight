@@ -194,8 +194,7 @@ export class ChessBoard {
         let newMoves = [];
         for (let i = 0; i < moves.length; i++) {
             let newMove = sumArrays(pos, moves[i]);
-            // If it's a valid position on the chessboard and not
-            // of the same color, add it
+            // If it's a valid position on the chessboard
             if(validatePosition(newMove)) {
                 newMoves.push(newMove);
             }
@@ -370,16 +369,14 @@ export class ChessBoard {
         let validMoves = [];
         for (let i = 0; i < moves.length; i++) {
             let newMove = sumArrays(pos, moves[i]);
-            // If it's a valid position on the chessboard and not
-            // of the same color, add it
-            if(validatePosition(newMove) &&
-                (!this.board[newMove.row][newMove.col] || (this.board[newMove.row][newMove.col].color !== currentPiece.color))) {
+            // If it's a valid position on the chessboard
+            if(validatePosition(newMove)) {
                 validMoves.push(newMove);
             }
         }
 
         // If the king hasn't moved, consider castle moves
-        if(!this.kingMoved[currentPiece.color]) {
+        if(currentPiece && !this.kingMoved[currentPiece.color]) {
             // If left rook hasn't moved and there are no pieces
             // in between, allow left castle
             if(!this.leftRookMoved[currentPiece.color] &&
@@ -609,6 +606,18 @@ export class ChessBoard {
                 break;
             }
         }
+
+        // CHECK ATTACKS FROM KING
+        const kingMoves = this.getKingMoves(pos);
+        // For each king move, determine if the opposite king is there
+        for (let i = 0; i < kingMoves.length; i++) {
+            piece = this.board[kingMoves[i].row][kingMoves[i].col];
+            if(piece && piece.type === "king" && piece.color === color) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // See if a king is in check
