@@ -18,55 +18,31 @@ const inArray = (array, pos) => {
     return false;
 }
 
-class ChessBoardSnapshot {
-    constructor (chessboardObject) {
-
-        // Copy the chessboard
-        this.board = Array(8);
-        for(let i = 0; i < 8; i++) {
-            this.board[i] = Array(8);
-            for (let j = 0; j < 8; j++) {
-            this.board[i][j] = chessboardObject.board[i][j];
-            }
+// See if a position exists in an array
+const inArray4 = (array, pos) => {
+    for (let i = 0; i < array.length; i++) {
+        if(array[i].fromRow === pos.fromRow &&
+            array[i].fromCol === pos.fromCol &&
+            array[i].toRow === pos.toRow &&
+            array[i].toCol === pos.toCol
+        ) {
+            return true;
         }
+    }
+    return false;
+}
 
-        // Copy the variables
-        this.kingMoved = {
-            "white": chessboardObject.kingMoved["white"],
-            "black": chessboardObject.kingMoved["black"]
-        };
-        this.leftRookMoved = {
-            "white": chessboardObject.leftRookMoved["white"],
-            "black": chessboardObject.leftRookMoved["black"]
-        };
-        this.rightRookMoved = {
-            "white": chessboardObject.rightRookMoved["white"],
-            "black": chessboardObject.rightRookMoved["black"]
-        };
-
-        this.turn = chessboardObject.turn;
-
-        this.prevMove = {
-            pawnDouble: chessboardObject.prevMove.pawnDouble,
-            color: chessboardObject.prevMove.color,
-            pos: {
-                row: chessboardObject.prevMove.pos.row,
-                col: chessboardObject.prevMove.pos.col
-            }
-        };
-
-        this.elPassant = chessboardObject.elPassant;
+class ChessMove {
+    constructor () {
+        this.changes = [];
     }
 
-    revert = (chessboardObject) => {
-        chessboardObject.board = this.board;
-        chessboardObject.kingMoved = this.kingMoved;
-        chessboardObject.leftRookMoved = this.leftRookMoved;
-        chessboardObject.rightRookMoved = this.rightRookMoved;
-        chessboardObject.kingPos = this.kingPos;
-        chessboardObject.turn = this.turn;
-        chessboardObject.prevMove = this.prevMove;
-        chessboardObject.elPassant = this.elPassant;
+    record = (row, col, piece) => {
+        this.changes.push({
+            row: row,
+            col: col,
+            piece: piece
+        });
     }
 }
 
@@ -111,6 +87,8 @@ export class ChessBoard {
         };
 
         this.elPassant = false;
+
+        this.currentValidMoves = this.getValidMoves(this.turn);
 
         this.chessboardElement = document.getElementById("chessboard");
         this.boardElements = Array(8);
@@ -224,12 +202,22 @@ export class ChessBoard {
     }
 
     move = (previousPos, pos) => {
-        this.board[pos.row][pos.col] = this.board[previousPos.row][previousPos.col];
-        this.board[previousPos.row][previousPos.col] = null;
-        this.drawBoard();
-        this.swapTurn();
-        if(this.isInCheck(this.turn)) {
-            console.log(this.turn + " is in CHECK");
+        console.log(this.currentValidMoves);
+        // If it's a valid move
+        if(inArray4(this.currentValidMoves, {
+            fromRow: previousPos.row,
+            fromCol: previousPos.col,
+            toRow: pos.row,
+            toCol: pos.col
+        })) {
+            this.board[pos.row][pos.col] = this.board[previousPos.row][previousPos.col];
+            this.board[previousPos.row][previousPos.col] = null;
+            this.drawBoard();
+            this.swapTurn();
+            this.currentValidMoves = this.getValidMoves(this.turn);
+            if(this.isInCheck(this.turn)) {
+                console.log(this.turn + " is in CHECK");
+            }
         }
     }
 
@@ -431,6 +419,10 @@ export class ChessBoard {
         // Go through all squares that are under attack. Is any of them
         // the king?
         const kingPosition = this.getKingPosition(color);
+        // If king is captured (theoretically)
+        if(!kingPosition) {
+            return true;
+        }
         const attacks = this.getAttackingSquares(attackerColor);
         for (let i = 0; i < attacks.length; i++) {
             if(kingPosition.row === attacks[i].toRow &&
@@ -439,5 +431,44 @@ export class ChessBoard {
             }
         }
         return false;
+    }
+
+    // Get the valid MOVES
+    getValidMoves = (color = this.turn) => {
+        const validMoves = this.getAttackingSquares(color);
+
+        // If the new location is the same color piece, make it invalid
+        for (let i = validMoves.length - 1; i >= 0; i--) {
+            const piece = this.board[validMoves[i].toRow][validMoves[i].toCol];
+            if(piece && piece.color === color) {
+                validMoves.splice(i, 1);
+            }
+        }
+
+        // Try each move. If it puts own king in check, make it invalid
+        for (let i = validMoves.length - 1; i >= 0; i--) {
+            // Record the board
+            const move = new ChessMove();
+            move.record(validMoves[i].fromRow, validMoves[i].fromCol,
+                this.board[validMoves[i].fromRow][validMoves[i].fromCol]
+            );
+            move.record(validMoves[i].toRow, validMoves[i].toCol,
+                this.board[validMoves[i].toRow][validMoves[i].toCol]
+            );
+            // Make the move
+            this.board[validMoves[i].toRow][validMoves[i].toCol] =
+                this.board[validMoves[i].fromRow][validMoves[i].fromCol];
+            this.board[validMoves[i].fromRow][validMoves[i].fromCol] = null;
+            // If check detected, remove valid move
+            if(this.isInCheck(color)) {
+                validMoves.splice(i, 1);
+            }
+            // Undo move
+            for(let i = 0; i < move.changes.length; i++) {
+                this.board[move.changes[i].row][move.changes[i].col] = move.changes[i].piece;
+            }
+        }
+
+        return validMoves;
     }
 }
