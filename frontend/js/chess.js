@@ -196,8 +196,7 @@ export class ChessBoard {
             let newMove = sumArrays(pos, moves[i]);
             // If it's a valid position on the chessboard and not
             // of the same color, add it
-            if(validatePosition(newMove) &&
-                (!this.board[newMove.row][newMove.col] || (this.board[newMove.row][newMove.col].color !== currentPiece.color))) {
+            if(validatePosition(newMove)) {
                 newMoves.push(newMove);
             }
         }
@@ -473,30 +472,37 @@ export class ChessBoard {
     isUnderAttack = (pos, color) => {
         
         let piece = null;
-        // Check pawn attacks
-        if(true) {
-            // Black pawns attack from row - 1
-            // White pawns attack from row + 1
-            let rowIncrease = -1;
-            if(color === "white") {
-                rowIncrease = 1;
-            }
-            // If top left is valid square
-            if(validatePositionWithOffset(pos, rowIncrease, -1)) {
-                piece = this.board[pos.row + rowIncrease][pos.col - 1];
-                if(piece && piece.type === "pawn" && piece.color === color) {
-                    return true;
-                }
-            }
-            // If top right is valid square
-            if(validatePositionWithOffset(pos, rowIncrease, 1)) {
-                piece = this.board[pos.row + rowIncrease][pos.col + 1];
-                if(piece && piece.type === "pawn" && piece.color === color) {
-                    return true;
-                }
+        // CHECK PAWN ATTACKS
+        // Black pawns attack from row - 1
+        // White pawns attack from row + 1
+        let rowIncrease = -1;
+        if(color === "white") {
+            rowIncrease = 1;
+        }
+        // If top left is valid square
+        if(validatePositionWithOffset(pos, rowIncrease, -1)) {
+            piece = this.board[pos.row + rowIncrease][pos.col - 1];
+            if(piece && piece.type === "pawn" && piece.color === color) {
+                return true;
             }
         }
-        return false;
+        // If top right is valid square
+        if(validatePositionWithOffset(pos, rowIncrease, 1)) {
+            piece = this.board[pos.row + rowIncrease][pos.col + 1];
+            if(piece && piece.type === "pawn" && piece.color === color) {
+                return true;
+            }
+        }
+
+        // CHECK KNIGHT ATTACKS
+        const knightMoves = this.getKnightMoves(pos);
+        // For each of the knight moves, check is there's a knight
+        for (let i = 0; i < knightMoves.length; i++) {
+            piece = this.board[knightMoves[i].row][knightMoves[i].col];
+            if(piece && piece.type === "knight" && piece.color === color) {
+                return true;
+            }
+        }
     }
 
     // See if a king is in check
