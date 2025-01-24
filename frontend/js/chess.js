@@ -503,6 +503,112 @@ export class ChessBoard {
                 return true;
             }
         }
+
+        // CHECK ATTACKS FROM ABOVE
+        for (let row = pos.row - 1; row >= 0; row--) {
+            piece = this.board[row][pos.col];
+            // If it's a queen or rook
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "rook")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM RIGHT
+        for (let col = pos.col + 1; col < 8; col++) {
+            piece = this.board[pos.row][col];
+            // If it's a queen or rook
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "rook")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM BELOW
+        for (let row = pos.row + 1; row < 8; row++) {
+            piece = this.board[row][pos.col];
+            // If it's a queen or rook
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "rook")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM LEFT
+        for (let col = pos.col - 1; col >= 0; col--) {
+            piece = this.board[pos.row][col];
+            // If it's a queen or rook
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "rook")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+
+        // CHECK ATTACKS FROM TOP-RIGHT
+        for (let i = 1; validatePositionWithOffset(pos, -i, i); i++) {
+            piece = this.board[pos.row - i][pos.col + i];
+            // If it's a queen or bishop
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "bishop")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM BOTTOM-RIGHT
+        for (let i = 1; validatePositionWithOffset(pos, i, i); i++) {
+            piece = this.board[pos.row + i][pos.col + i];
+            // If it's a queen or bishop
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "bishop")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM BOTTOM-LEFT
+        for (let i = 1; validatePositionWithOffset(pos, i, -i); i++) {
+            piece = this.board[pos.row + i][pos.col - i];
+            // If it's a queen or bishop
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "bishop")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
+        // CHECK ATTACKS FROM TOP-LEFT
+        for (let i = 1; validatePositionWithOffset(pos, -i, -i); i++) {
+            piece = this.board[pos.row - i][pos.col - i];
+            // If it's a queen or bishop
+            if(piece && piece.color === color &&
+                (piece.type === "queen" || piece.type === "bishop")) {
+                return true;
+            }
+            // If there's a different piece, break
+            if(piece) {
+                break;
+            }
+        }
     }
 
     // See if a king is in check
