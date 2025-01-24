@@ -9,6 +9,13 @@ const sumArrays = (pos1, pos2) => {
 const validatePosition = (pos) => {
     return (pos.row >= 0 && pos.row < 8 && pos.col >= 0 && pos.col < 8);
 }
+const validatePositionWithOffset = (pos, rowChange, colChange) => {
+    const newPos = {
+        row: pos.row + rowChange,
+        col: pos.col + colChange
+    };
+    return validatePosition(newPos);
+}
 
 // See if a position exists in an array
 const inArray = (array, pos) => {
@@ -47,6 +54,13 @@ export class ChessBoard {
             "white": false,
             "black": false
         };
+        
+        this.kingPos = {
+            "white": {row: 7, col: 4},
+            "black": {row: 0, col: 4}
+        };
+
+        this.turn = "white";
 
         this.prevMove = {
             pawnDouble: false,
@@ -78,6 +92,13 @@ export class ChessBoard {
                 }
             }
         }
+    }
+
+    getOppositeColor = (color) => {
+        if(color === "black") {
+            return "white";
+        }
+        return "black";
     }
 
     generateChessImgElement = (piece) => {
@@ -146,6 +167,15 @@ export class ChessBoard {
         this.movePiece(previousPos, pos);
         this.selectedSquare = null;
         return;
+    }
+
+    swapTurn = () => {
+        if(this.turn === "white") {
+            this.turn = "black";
+        }
+        else {
+            this.turn = "white";
+        }
     }
 
     getKnightMoves = (pos) => {
@@ -439,9 +469,47 @@ export class ChessBoard {
         return validMoves;
     }
 
-    // If it's a knight, make sure new square is valid
+    // Determine if a square is under attack by player of 'color'
+    isUnderAttack = (pos, color) => {
+        
+        let piece = null;
+        // Check pawn attacks
+        if(true) {
+            // Black pawns attack from row - 1
+            // White pawns attack from row + 1
+            let rowIncrease = -1;
+            if(color === "white") {
+                rowIncrease = 1;
+            }
+            // If top left is valid square
+            if(validatePositionWithOffset(pos, rowIncrease, -1)) {
+                piece = this.board[pos.row + rowIncrease][pos.col - 1];
+                if(piece && piece.type === "pawn" && piece.color === color) {
+                    return true;
+                }
+            }
+            // If top right is valid square
+            if(validatePositionWithOffset(pos, rowIncrease, 1)) {
+                piece = this.board[pos.row + rowIncrease][pos.col + 1];
+                if(piece && piece.type === "pawn" && piece.color === color) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // See if a king is in check
+    detectCheck = (color) => {
+
+    }
+
     movePiece = (pos1, pos2) => {
+        // Check for turn
         let piece = this.board[pos1.row][pos1.col];
+        if(!piece || piece.color !== this.turn) {
+            return false;
+        }
         let validMove = false;
         let kingMove = false;
         if(piece.type === "knight") {
@@ -472,9 +540,13 @@ export class ChessBoard {
             kingMove = true;
             console.log("king attempt");
             if(inArray(this.getKingMoves(pos1), pos2)) {
-                validMove = true;
-                // Note that king has moved (prevent future castling)
-                this.kingMoved[piece.color] = true;
+                // If king moved to a square that's under attack
+                if(this.isUnderAttack(pos2, this.getOppositeColor(this.turn))) {
+                    validMove = false;
+                }
+                else {
+                    validMove = true;
+                }
             }
         }
         else if(piece.type === "pawn") {
@@ -488,6 +560,8 @@ export class ChessBoard {
         }
         // Make sure move is valid and there's no same color piece there
         if(validMove) {
+            // Make sure own king was not put into check
+
             // If either pos1 or pos2 is in a corner, prevent future
             // castling with that rook
             if((pos1.row === 0 && pos1.col === 0) || (pos2.row === 0 && pos2.col === 0)) {
@@ -501,6 +575,14 @@ export class ChessBoard {
             }
             else if((pos1.row === 7 && pos1.col === 7) || (pos2.row === 7 && pos2.col === 7)) {
                 this.leftRookMoved["white"] = true;
+            }
+
+            // If either pos1 or pos2 is in king's square, prevent future castling
+            if((pos1.row === 0 && pos1.col === 4) || (pos2.row === 0 && pos2.col === 4)) {
+                this.kingMoved["white"] = true;
+            }
+            else if((pos1.row === 7 && pos1.col === 4) || (pos2.row === 7 && pos2.col === 4)) {
+                this.kingMoved["black"] = true;
             }
 
             // If pawn moved forward 2
@@ -549,6 +631,7 @@ export class ChessBoard {
             }
             this.board[pos2.row][pos2.col] = this.board[pos1.row][pos1.col];
             this.board[pos1.row][pos1.col] = null;
+            this.swapTurn();
             this.drawBoard();
             console.log(this.prevMove);
             return true;
