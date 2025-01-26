@@ -204,15 +204,27 @@ export class ChessBoard {
             toRow: pos.row,
             toCol: pos.col
         })) {
+            const piece = this.board[previousPos.row][previousPos.col];
             // If pawn dash, record (for en passant possibility)
-            if(this.board[previousPos.row][previousPos.col].type === "pawn" &&
+            if(piece.type === "pawn" &&
                 Math.abs(pos.row - previousPos.row) === 2) {
                     this.pawnDash = pos.col;
             }
             else {
                 this.pawnDash = null;
             }
-            this.board[pos.row][pos.col] = this.board[previousPos.row][previousPos.col];
+            // If this was an en passant move, make sure to capture the
+            // opponent piece on the side.
+            // We can detect that it was an en passant if:
+            // 1) The move was a pawn
+            // 2) The move was diagonal
+            // 3) There was not an opponent's piece in the new square
+            if(piece.type === "pawn" && pos.col !== previousPos.col &&
+                this.board[pos.row][pos.col] === null) {
+                // Capture the opponent's pawn
+                this.board[previousPos.row][pos.col] = null;
+            }
+            this.board[pos.row][pos.col] = piece;
             this.board[previousPos.row][previousPos.col] = null;
             this.drawBoard();
             this.swapTurn();
