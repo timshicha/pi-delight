@@ -224,6 +224,43 @@ export class ChessBoard {
                 // Capture the opponent's pawn
                 this.board[previousPos.row][pos.col] = null;
             }
+            // If this was a caslte move, move the rook too
+            // We can detect a castle move if the king moved two columns
+            if(piece.type === "king" && Math.abs(pos.col - previousPos.col) == 2) {
+                // Based on king's new position, we can determine which rook to move
+                // Left rook
+                if(pos.col === 2) {
+                    this.board[pos.row][3] = this.board[pos.row][0];
+                    this.board[pos.row][0] = null;
+                }
+                // Right rook
+                else if(pos.col === 6) {
+                    this.board[pos.row][5] = this.board[pos.row][7];
+                    this.board[pos.row][7] = null;
+                }
+            }
+            // If king or rook move, record this action to prevent future
+            // castling with this piece.
+            if(piece.type === "king") {
+                this.kingMoved[piece.color] = true;
+            }
+            if((previousPos.row === 0 && previousPos.col === 0) ||
+                (pos.row === 0 && pos.col === 0)) {
+                    this.leftRookMoved["black"] = true;
+            }
+            if((previousPos.row === 0 && previousPos.col === 7) ||
+                (pos.row === 0 && pos.col === 7)) {
+                    this.rightRookMoved["black"] = true;
+            }
+            if((previousPos.row === 7 && previousPos.col === 0) ||
+                (pos.row === 7 && pos.col === 0)) {
+                    this.leftRookMoved["white"] = true;
+            }
+            if((previousPos.row === 7 && previousPos.col === 7) ||
+                (pos.row === 7 && pos.col === 7)) {
+                    this.rightRookMoved["white"] = true;
+            }
+
             this.board[pos.row][pos.col] = piece;
             this.board[previousPos.row][previousPos.col] = null;
             this.drawBoard();
@@ -563,6 +600,93 @@ export class ChessBoard {
             // Undo move
             for(let i = 0; i < move.changes.length; i++) {
                 this.board[move.changes[i].row][move.changes[i].col] = move.changes[i].piece;
+            }
+        }
+
+        // Now check castle moves (if king hasn't moved)
+        if(!this.kingMoved[color]) {
+            let row = 0;
+            if(color === "white") {
+                row = 7;
+            }
+            // Check left rook castle. Conditions:
+            // Left rook hasn't moved
+            // There are no pieces between king and rook
+            // King is not in check
+            // Square king moves through is not in check
+            // Square king ends in is not in check
+            if(!this.leftRookMoved[color] &&
+                this.board[row][1] === null &&
+                this.board[row][2] === null &&
+                this.board[row][3] === null) {
+                // Make sure there's no checks in castle path
+                let checkDetected = false;
+                // Is king already in check?
+                checkDetected = this.isInCheck(color);
+                // Would king be in check in next square?
+                if(!checkDetected) {
+                    this.board[row][3] = this.board[row][4];
+                    this.board[row][4] = null;
+                    checkDetected = checkDetected || this.isInCheck(color);
+                    this.board[row][4] = this.board[row][3];
+                    this.board[row][3] = null;
+                }
+                // Would king be in check in final square?
+                if(!checkDetected) {
+                    this.board[row][2] = this.board[row][4];
+                    this.board[row][4] = null;
+                    checkDetected = checkDetected || this.isInCheck(color);
+                    this.board[row][4] = this.board[row][2];
+                    this.board[row][2] = null;
+                }
+                // If no check was detected, castle is a valid move
+                if(!checkDetected) {
+                    validMoves.push({
+                        fromRow: row,
+                        fromCol: 4,
+                        toRow: row,
+                        toCol: 2
+                    });
+                }
+            }
+            // Check right rook castle. Conditions:
+            // Right rook hasn't moved
+            // There are no pieces between king and rook
+            // King is not in check
+            // Square king moves through is not in check
+            // Square king ends in is not in check
+            if(!this.rightRookMoved[color] &&
+                this.board[row][6] === null &&
+                this.board[row][5] === null) {
+                // Make sure there's no checks in castle path
+                let checkDetected = false;
+                // Is king already in check?
+                checkDetected = this.isInCheck(color);
+                // Would king be in check in next square?
+                if(!checkDetected) {
+                    this.board[row][5] = this.board[row][4];
+                    this.board[row][4] = null;
+                    checkDetected = checkDetected || this.isInCheck(color);
+                    this.board[row][4] = this.board[row][5];
+                    this.board[row][5] = null;
+                }
+                // Would king be in check in final square?
+                if(!checkDetected) {
+                    this.board[row][6] = this.board[row][4];
+                    this.board[row][4] = null;
+                    checkDetected = checkDetected || this.isInCheck(color);
+                    this.board[row][4] = this.board[row][6];
+                    this.board[row][6] = null;
+                }
+                // If no check was detected, castle is a valid move
+                if(!checkDetected) {
+                    validMoves.push({
+                        fromRow: row,
+                        fromCol: 4,
+                        toRow: row,
+                        toCol: 6
+                    });
+                }
             }
         }
 
