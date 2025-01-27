@@ -187,7 +187,6 @@ export class ChessBoard {
         // Otherwise, a piece was selected and a new square was just clicked.
         // Validate the move.
         const previousPos = this.selectedSquare;
-        console.log("Selected square:", pos.row, pos.col);
 
         // Moves only if move is valid
         this.move(previousPos, pos);
@@ -196,7 +195,6 @@ export class ChessBoard {
     }
 
     move = (previousPos, pos) => {
-        console.log(this.currentValidMoves);
         // If it's a valid move
         if(inArray4(this.currentValidMoves, {
             fromRow: previousPos.row,
@@ -268,6 +266,9 @@ export class ChessBoard {
             this.currentValidMoves = this.getValidMoves(this.turn);
             if(this.isInCheck(this.turn)) {
                 console.log(this.turn + " is in CHECK");
+                if(this.currentValidMoves.length === 0) {
+                    alert("CHECKMATE");
+                }
             }
         }
     }
@@ -569,8 +570,6 @@ export class ChessBoard {
         let  validMoves = this.getAttackingSquares(color, false);
         validMoves = validMoves.concat(this.getValidPawnMoves(color));
 
-        console.log(validMoves);
-
         // If the new location is the same color piece, make it invalid
         for (let i = validMoves.length - 1; i >= 0; i--) {
             const piece = this.board[validMoves[i].toRow][validMoves[i].toCol];
@@ -589,10 +588,25 @@ export class ChessBoard {
             move.record(validMoves[i].toRow, validMoves[i].toCol,
                 this.board[validMoves[i].toRow][validMoves[i].toCol]
             );
+            // If en passant, also remove opponent piece
+            let enPassant = false;
+            const piece = this.board[validMoves[i].fromRow][validMoves[i].fromCol];
+            if(piece.type === "pawn" && validMoves[i].fromCol !== validMoves[i].toCol &&
+                this.board[validMoves[i].toRow][validMoves[i].toCol] === null) {
+                enPassant = true;
+                move.record(validMoves[i].fromRow, validMoves[i].toCol,
+                    this.board[validMoves[i].fromRow][validMoves[i].toCol]
+                );
+            }
+
             // Make the move
             this.board[validMoves[i].toRow][validMoves[i].toCol] =
                 this.board[validMoves[i].fromRow][validMoves[i].fromCol];
             this.board[validMoves[i].fromRow][validMoves[i].fromCol] = null;
+            // If el passant, remove pawn
+            if(enPassant) {
+                this.board[validMoves[i].fromRow][validMoves[i].toCol] = null;
+            }
             // If check detected, remove valid move
             if(this.isInCheck(color)) {
                 validMoves.splice(i, 1);
