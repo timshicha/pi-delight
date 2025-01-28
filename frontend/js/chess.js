@@ -222,6 +222,15 @@ export class ChessBoard {
                 // Capture the opponent's pawn
                 this.board[previousPos.row][pos.col] = null;
             }
+            // If pawn reached the end, promote it
+            if(piece.type === "pawn" && (pos.row === 0 || pos.row === 7)) {
+                let promoteTo = prompt("promote to: ");
+                if(promoteTo !== "queen" && promoteTo !== "bishop" &&
+                    promoteTo !== "knight" && promoteTo !== "rook") {
+                    promoteTo = "queen";
+                }
+                piece.type = promoteTo;
+            }
             // If this was a caslte move, move the rook too
             // We can detect a castle move if the king moved two columns
             if(piece.type === "king" && Math.abs(pos.col - previousPos.col) == 2) {
