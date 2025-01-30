@@ -91,7 +91,6 @@ export class ChessBoard {
 
             this.elPassant = false;
         }
-
         this.currentValidMoves = this.getValidMoves(this.turn);
     }
 
@@ -695,6 +694,10 @@ export class ChessGame {
     }
 
     makeMove = (username, moveInfo) => {
+        // Make sure the username and turn match
+        if(this.players[username].color !== this.chessboard.turn) {
+            return;
+        }
         this.chessboard.move(
             {row: moveInfo.fromRow, col: moveInfo.fromCol},
             {row: moveInfo.toRow, col: moveInfo.toCol}

@@ -126,6 +126,7 @@ export class ChessBoard {
         this.turn = state.turn;
         this.pawnDash = state.pawnDash;
         this.elPassant = state.elPassant;
+        this.currentValidMoves = this.getValidMoves();
         this.drawBoard();
     }
 
@@ -311,9 +312,8 @@ export class ChessBoard {
                     this.rightRookMoved["white"] = true;
             }
 
-            this.board[pos.row][pos.col] = piece;
-            this.board[previousPos.row][previousPos.col] = null;
-
+            // Send the move to the server
+            
             if(this.ws) {
                 // Send the move
                 this.ws.send(JSON.stringify({
@@ -328,15 +328,6 @@ export class ChessBoard {
                         promoteTo: promoteTo
                     }
                 }));
-            }
-            this.drawBoard();
-            this.swapTurn();
-            this.currentValidMoves = this.getValidMoves(this.turn);
-            if(this.isInCheck(this.turn)) {
-                console.log(this.turn + " is in CHECK");
-                if(this.currentValidMoves.length === 0) {
-                    alert("CHECKMATE");
-                }
             }
         }
     }
