@@ -94,7 +94,7 @@ export class ChessBoard {
         this.currentValidMoves = this.getValidMoves(this.turn);
     }
 
-    getGameInfo = () => {
+    getGameInfo = () => {       
         return {
             board: this.board,
             kingMoved: this.kingMoved,
@@ -690,7 +690,9 @@ export class ChessGame {
     }
 
     getVisibleState = () => {
-        return this.chessboard.getGameInfo();
+        let visibleState = this.chessboard.getGameInfo();
+        visibleState.players = this.players;
+        return visibleState;
     }
 
     makeMove = (username, moveInfo) => {

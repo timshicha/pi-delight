@@ -108,7 +108,7 @@ export class ChessBoard {
             for (let td = 0; td < 8; td++) {
                 this.boardElements[tr][td].replaceChildren(this.generateChessImgElement(this.board[tr][td]));
                 this.boardElements[tr][td].onclick = () => {
-                    this.selectSquare({
+                    this.clickSquare({
                         row: tr,
                         col: td
                     });
@@ -126,6 +126,11 @@ export class ChessBoard {
         this.turn = state.turn;
         this.pawnDash = state.pawnDash;
         this.elPassant = state.elPassant;
+
+        this.color = state.players[this.username].color
+        console.log(this.color);
+
+        this.selectedSquare = null;
         this.currentValidMoves = this.getValidMoves();
         this.drawBoard();
     }
@@ -213,9 +218,24 @@ export class ChessBoard {
     }
 
     selectSquare = (pos) => {
+        this.boardElements[pos.row][pos.col].getElementsByTagName("img")[0].classList.add("blink-image");
+        this.selectedSquare = pos;
+    }
+
+    unselectSquare = (pos) => {
+        this.boardElements[pos.row][pos.col].getElementsByTagName("img")[0].classList.remove("blink-image");
+        this.selectedSquare = null;
+    }
+
+    clickSquare = (pos) => {
+        // If not this player's turn don't allow selection
+        if(this.color !== this.turn) {
+            return;
+        }
+        console.log("click square");
         // If selected the same square, unselect
         if(this.selectedSquare && pos.row == this.selectedSquare.row && pos.col == this.selectedSquare.col) {
-            this.selectedSquare = null;
+            this.unselectSquare(this.selectedSquare);
             return;
         }
         // If nothing was previously selected and now clicked an empty square, ignore
@@ -224,7 +244,7 @@ export class ChessBoard {
         }
         // If no previous selected cell, simply select this cell
         else if(!this.selectedSquare) {
-            this.selectedSquare = pos;
+            this.selectSquare(pos);
             return;
         }
         // Otherwise, a piece was selected and a new square was just clicked.
@@ -233,7 +253,9 @@ export class ChessBoard {
 
         // Moves only if move is valid
         this.move(previousPos, pos);
-        this.selectedSquare = null;
+        this.unselectSquare(previousPos);
+        // Re-run click square in case user clicked on their own piece
+        this.clickSquare(pos);
         return;
     }
 
@@ -313,7 +335,7 @@ export class ChessBoard {
             }
 
             // Send the move to the server
-            
+
             if(this.ws) {
                 // Send the move
                 this.ws.send(JSON.stringify({
