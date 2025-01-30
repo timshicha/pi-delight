@@ -39,6 +39,8 @@ var inGame = false;
 var playersInLobby = [];
 var currentGameType = null;
 var navbarExtended = false;
+var chessboard = new ChessBoard();
+chessboard.drawBoard();
 
 // This is what needs to be done when there's a message from the server
 const wsOnMessage = (event) => {
@@ -66,6 +68,7 @@ const wsOnMessage = (event) => {
             localStorage.setItem("token", data.token);
             localStorage.setItem("loggedIn", true);
             currentPage = 'home';
+            chessboard.updateCredentials(ws, username, token);
             modifyLobby();
             updatePage();
             requestRefresh();
@@ -86,6 +89,7 @@ const wsOnMessage = (event) => {
             localStorage.setItem("loggedIn", true);
             currentPage = 'home';
             // After user has been validated, request a refresh of data
+            chessboard.updateCredentials(ws, username, token);
             updatePage();
             requestRefresh();
             updateNavbarExtension();
@@ -140,7 +144,12 @@ const wsOnMessage = (event) => {
             currentPage = 'game';
             currentGameType = data.gameType;
             hideLobby();
-            modifyGame(true, data.gameType, data.state, ws, username, token);
+            if(data.gameType === 'Match' || data.gameType === 'Shooter Game') {
+                modifyGame(true, data.gameType, data.state, ws, username, token);
+            }
+            else if(data.gameType === 'Chess') {
+                chessboard.overWriteBoard(data.state.game);
+            }
             updatePage();
         }
 
@@ -486,5 +495,3 @@ const updateNavbarExtension = () => {
 }
 updateNavbarExtension(username, token);
 
-let chess = new ChessBoard();
-chess.drawBoard();

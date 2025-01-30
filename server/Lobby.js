@@ -5,7 +5,7 @@ import { ChessGame } from "./Games/Chess.js";
 export class Lobby {
     constructor (users) {
         this.users = users;
-        this.players = [];
+        this.players = []; // List of usernames in lobby
         this.icons = [];
         this.gameType = null;
         this.game = null;
@@ -76,6 +76,9 @@ export class Lobby {
         // Check to make sure game was started successfully
         if(!this.game || !this.game.success) {
             this.game = null;
+        }
+        else {
+            this.gameType = gameType;
         }
         this.sendRefresh(true);
     }

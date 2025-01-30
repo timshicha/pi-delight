@@ -2,6 +2,7 @@
 #chessboard {
     margin: 0px;
     border-collapse: collapse;
+    touch-action: manipulation;
 }
 
 #chessboard tr {
@@ -27,4 +28,60 @@
     width: 38px;
     left: 1px;
     top: 0px;
+}
+
+/* Copied from here: https://stackoverflow.com/questions/33667143/how-to-make-a-blinking-image-in-css3 */
+/* Firefox old*/
+@-moz-keyframes blink {
+    0% {
+        opacity:1;
+    }
+    50% {
+        opacity:0.2;
+    }
+    100% {
+        opacity:1;
+    }
+} 
+
+@-webkit-keyframes blink {
+    0% {
+        opacity:1;
+    }
+    50% {
+        opacity:0.2;
+    }
+    100% {
+        opacity:1;
+    }
+}
+/* IE */
+@-ms-keyframes blink {
+    0% {
+        opacity:1;
+    }
+    50% {
+        opacity:0.2;
+    }
+    100% {
+        opacity:1;
+    }
+} 
+/* Opera and prob css3 final iteration */
+@keyframes blink {
+    0% {
+        opacity:1;
+    }
+    50% {
+        opacity:0.2;
+    }
+    100% {
+        opacity:1;
+    }
+} 
+.blink-image {
+    -moz-animation: blink normal 1s infinite ease-in-out; /* Firefox */
+    -webkit-animation: blink normal 1s infinite ease-in-out; /* Webkit */
+    -ms-animation: blink normal 1s infinite ease-in-out; /* IE */
+    animation: blink normal 1s infinite ease-in-out; /* Opera and prob css3 final iteration */
 }
