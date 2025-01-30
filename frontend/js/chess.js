@@ -242,8 +242,8 @@ export class ChessBoard {
         else if(!this.selectedSquare && !this.board[pos.row][pos.col]) {
             return;
         }
-        // If no previous selected cell, simply select this cell
-        else if(!this.selectedSquare) {
+        // If no previous selected cell and now clicked own piece, select this piece
+        else if(!this.selectedSquare && this.board[pos.row][pos.col].color === this.color) {
             this.selectSquare(pos);
             return;
         }
@@ -254,8 +254,7 @@ export class ChessBoard {
         // Moves only if move is valid
         this.move(previousPos, pos);
         this.unselectSquare(previousPos);
-        // Re-run click square in case user clicked on their own piece
-        this.clickSquare(pos);
+        this.unselectSquare(pos);
         return;
     }
 
