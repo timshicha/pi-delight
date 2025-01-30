@@ -47,40 +47,53 @@ class ChessMove {
 }
 
 export class ChessBoard {
-    constructor () {
-        this.board = [
-            [{color: "black", type: "rook"}, {color: "black", type: "knight"}, {color: "black", type: "bishop"}, {color: "black", type: "queen"}, {color: "black", type: "king"}, {color: "black", type: "bishop"}, {color: "black", type: "knight"}, {color: "black", type: "rook"}],
-            [{color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [null, null, null, null, null, null, null, null],
-            [{color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}],
-            [{color: "white", type: "rook"}, {color: "white", type: "knight"}, {color: "white", type: "bishop"}, {color: "white", type: "queen"}, {color: "white", type: "king"}, {color: "white", type: "bishop"}, {color: "white", type: "knight"}, {color: "white", type: "rook"}]
-        ];
-        this.selectedSquare = null;
-        this.moveHistory = [];
+    constructor (jsonString, ws=undefined, username=undefined, token=undefined) {
+        this.ws = ws;
+        this.username = username;
+        this.token = token;
+        // If we have a board to copy
+        if(jsonString) {
+            const obj = JSON.parse(jsonString);
+            for (let i in obj) {
+                this[i] = obj[i];
+            }
+        }
+        // If starting from scratch
+        else {
+            this.board = [
+                [{color: "black", type: "rook"}, {color: "black", type: "knight"}, {color: "black", type: "bishop"}, {color: "black", type: "queen"}, {color: "black", type: "king"}, {color: "black", type: "bishop"}, {color: "black", type: "knight"}, {color: "black", type: "rook"}],
+                [{color: "black", type: "pawn"}, {color: "white", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}, {color: "black", type: "pawn"}],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [{color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}, {color: "white", type: "pawn"}],
+                [{color: "white", type: "rook"}, {color: "white", type: "knight"}, {color: "white", type: "bishop"}, {color: "white", type: "queen"}, {color: "white", type: "king"}, {color: "white", type: "bishop"}, {color: "white", type: "knight"}, {color: "white", type: "rook"}]
+            ];
+            this.selectedSquare = null;
+            this.moveHistory = [];
 
-        // Keep track of king and rook movements for castling
-        this.kingMoved = {
-            "white": false,
-            "black": false
-        };
-        this.leftRookMoved = {
-            "white": false,
-            "black": false
-        };
-        this.rightRookMoved = {
-            "white": false,
-            "black": false
-        };
+            // Keep track of king and rook movements for castling
+            this.kingMoved = {
+                "white": false,
+                "black": false
+            };
+            this.leftRookMoved = {
+                "white": false,
+                "black": false
+            };
+            this.rightRookMoved = {
+                "white": false,
+                "black": false
+            };
 
-        this.turn = "white";
+            this.turn = "white";
 
-        // If a pawn dashes forward 2, record its column
-        this.pawnDash = null;
+            // If a pawn dashes forward 2, record its column
+            this.pawnDash = null;
 
-        this.elPassant = false;
+            this.elPassant = false;
+        }
 
         this.currentValidMoves = this.getValidMoves(this.turn);
 
@@ -103,6 +116,24 @@ export class ChessBoard {
                 }
             }
         }
+    }
+
+    updateCredentials = (ws, username, token) => {
+        this.ws = ws;
+        this.username = username;
+        this.token = token;
+    }
+
+    toJSON = () => {
+        return JSON.stringify({
+            board: this.board,
+            kingMoved: this.kingMoved,
+            leftRookMoved: this.leftRookMoved,
+            rightRookMoved: this.rightRookMoved,
+            turn: this.turn,
+            pawnDash: this.pawnDash,
+            elPassant: this.elPassant
+        });
     }
 
     getOppositeColor = (color) => {
@@ -222,9 +253,10 @@ export class ChessBoard {
                 // Capture the opponent's pawn
                 this.board[previousPos.row][pos.col] = null;
             }
+            let promoteTo = null;
             // If pawn reached the end, promote it
             if(piece.type === "pawn" && (pos.row === 0 || pos.row === 7)) {
-                let promoteTo = prompt("promote to: ");
+                promoteTo = prompt("promote to: ");
                 if(promoteTo !== "queen" && promoteTo !== "bishop" &&
                     promoteTo !== "knight" && promoteTo !== "rook") {
                     promoteTo = "queen";
@@ -270,6 +302,22 @@ export class ChessBoard {
 
             this.board[pos.row][pos.col] = piece;
             this.board[previousPos.row][previousPos.col] = null;
+
+            if(this.ws) {
+                // Send the move
+                this.ws.send(JSON.stringify({
+                    messageType: "gameMove",
+                    username: this.username,
+                    token: this.token,
+                    moveInfo: {
+                        fromRow: previousPos.row,
+                        fromCol: previousPos.col,
+                        toRow: pos.row,
+                        toCol: pos.col,
+                        promoteTo: promoteTo
+                    }
+                }));
+            }
             this.drawBoard();
             this.swapTurn();
             this.currentValidMoves = this.getValidMoves(this.turn);

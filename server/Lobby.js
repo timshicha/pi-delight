@@ -5,7 +5,7 @@ import { ChessGame } from "./Games/Chess.js";
 export class Lobby {
     constructor (users) {
         this.users = users;
-        this.players = [];
+        this.players = []; // List of usernames in lobby
         this.icons = [];
         this.gameType = null;
         this.game = null;
