@@ -77,6 +77,9 @@ export class Lobby {
         if(!this.game || !this.game.success) {
             this.game = null;
         }
+        else {
+            this.gameType = gameType;
+        }
         this.sendRefresh(true);
     }
 

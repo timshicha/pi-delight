@@ -95,8 +95,8 @@ export class ChessBoard {
         this.currentValidMoves = this.getValidMoves(this.turn);
     }
 
-    toJSON = () => {
-        return JSON.stringify({
+    getGameInfo = () => {
+        return {
             board: this.board,
             kingMoved: this.kingMoved,
             leftRookMoved: this.leftRookMoved,
@@ -104,7 +104,7 @@ export class ChessBoard {
             turn: this.turn,
             pawnDash: this.pawnDash,
             elPassant: this.elPassant
-        });
+        };
     }
 
     getOppositeColor = (color) => {
@@ -691,9 +691,7 @@ export class ChessGame {
     }
 
     getVisibleState = () => {
-        return {
-            board: this.board
-        };
+        return this.chessboard.getGameInfo();
     }
 
     makeMove = (username, moveInfo) => {
@@ -701,6 +699,7 @@ export class ChessGame {
             {row: moveInfo.fromRow, col: moveInfo.fromCol},
             {row: moveInfo.toRow, col: moveInfo.toCol}
         );
+        this.sendRefreshFunc();
     }
 
     removePlayer = (username) => {

@@ -144,7 +144,12 @@ const wsOnMessage = (event) => {
             currentPage = 'game';
             currentGameType = data.gameType;
             hideLobby();
-            modifyGame(true, data.gameType, data.state, ws, username, token);
+            if(data.gameType === 'Match' || data.gameType === 'Shooter Game') {
+                modifyGame(true, data.gameType, data.state, ws, username, token);
+            }
+            else if(data.gameType === 'Chess') {
+                chessboard.overWriteBoard(data.state.game);
+            }
             updatePage();
         }
 

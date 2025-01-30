@@ -118,6 +118,17 @@ export class ChessBoard {
         }
     }
 
+    overWriteBoard = (state) => {
+        this.board = state.board;
+        this.kingMoved = state.kingMoved;
+        this.leftRookMoved = state.leftRookMoved;
+        this.rightRookMoved = state.rightRookMoved;
+        this.turn = state.turn;
+        this.pawnDash = state.pawnDash;
+        this.elPassant = state.elPassant;
+        this.drawBoard();
+    }
+
     updateCredentials = (ws, username, token) => {
         this.ws = ws;
         this.username = username;
